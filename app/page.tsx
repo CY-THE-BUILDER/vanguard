@@ -38,12 +38,14 @@ const streakMilestones: Record<number, string> = {
 
 const shareFallbackTitle = "Fortune Cookie Daily";
 const crumbPieces = [
-  { id: "crumb-1", x: -74, y: -22, rotate: -20, delay: 0.02 },
-  { id: "crumb-2", x: -52, y: 36, rotate: 24, delay: 0.08 },
-  { id: "crumb-3", x: -8, y: -54, rotate: 44, delay: 0.12 },
-  { id: "crumb-4", x: 56, y: -28, rotate: -34, delay: 0.06 },
-  { id: "crumb-5", x: 72, y: 24, rotate: 18, delay: 0.14 },
-  { id: "crumb-6", x: 16, y: 58, rotate: -26, delay: 0.18 }
+  { id: "crumb-1", x: -96, y: -34, rotate: -42, delay: 0.02, width: 14, height: 9 },
+  { id: "crumb-2", x: -82, y: 30, rotate: 32, delay: 0.06, width: 16, height: 10 },
+  { id: "crumb-3", x: -34, y: -76, rotate: 56, delay: 0.08, width: 10, height: 10 },
+  { id: "crumb-4", x: 20, y: -82, rotate: -24, delay: 0.12, width: 18, height: 10 },
+  { id: "crumb-5", x: 88, y: -28, rotate: -48, delay: 0.1, width: 14, height: 8 },
+  { id: "crumb-6", x: 102, y: 26, rotate: 36, delay: 0.15, width: 16, height: 10 },
+  { id: "crumb-7", x: 40, y: 76, rotate: -18, delay: 0.18, width: 12, height: 8 },
+  { id: "crumb-8", x: -28, y: 82, rotate: 22, delay: 0.2, width: 14, height: 9 }
 ];
 
 export default function HomePage() {
@@ -329,9 +331,9 @@ export default function HomePage() {
         <p className="mt-2 text-sm leading-6 text-ink/80">{streakHint}</p>
       </section>
 
-      <section className="relative mt-8 flex min-h-[370px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/50 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.8),transparent_42%),linear-gradient(180deg,rgba(255,247,232,0.9),rgba(248,220,180,0.92))] px-4 py-8 shadow-cookie">
+      <section className="relative mt-8 flex min-h-[390px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/50 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.8),transparent_42%),linear-gradient(180deg,rgba(255,247,232,0.9),rgba(248,220,180,0.92))] px-4 py-8 shadow-cookie">
         <div className="absolute -top-10 h-32 w-32 rounded-full bg-white/30 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-28 w-56 -translate-x-1/2 rounded-full bg-[#c98e4d]/25 blur-3xl" />
+        <div className="absolute bottom-4 left-1/2 h-24 w-64 -translate-x-1/2 rounded-full bg-[#c98e4d]/25 blur-3xl" />
         <motion.div
           animate={{ opacity: [0.3, 0.55, 0.3], scale: [0.92, 1.04, 0.92] }}
           transition={{ duration: 4.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
@@ -345,13 +347,32 @@ export default function HomePage() {
               onClick={handleCookieTap}
               animate={
                 stage === "cracking"
-                  ? { rotate: [0, -8, 10, -10, 6, 0], scale: [1, 1.03, 1] }
+                  ? {
+                      rotate: [0, -6, 8, -9, 5, 0],
+                      scale: [1, 0.98, 1.02, 1],
+                      y: [0, -2, 0]
+                    }
                   : { rotate: 0, scale: 1 }
               }
               transition={{ duration: 0.7 }}
-              className="relative flex h-[220px] w-[220px] items-center justify-center"
+              className="relative flex h-[240px] w-[280px] items-center justify-center"
               aria-label="Open fortune cookie"
             >
+              <motion.span
+                animate={stage === "idle" ? { opacity: [0.14, 0.28, 0.14], scale: [0.96, 1.04, 0.96] } : { opacity: 0 }}
+                transition={{ duration: 2.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                className="absolute inset-x-8 top-9 h-28 rounded-full border border-white/40"
+              />
+              <motion.span
+                animate={
+                  stage === "cracking"
+                    ? { opacity: [0.1, 0.28, 0], scaleX: [0.8, 1.15, 1.2] }
+                    : { opacity: 0.14, scaleX: 1 }
+                }
+                transition={{ duration: 0.45 }}
+                className="absolute bottom-7 h-8 w-44 rounded-full bg-[#8b5424]/25 blur-xl"
+              />
+
               {crumbPieces.map((crumb) => (
                 <motion.span
                   key={crumb.id}
@@ -367,37 +388,85 @@ export default function HomePage() {
                       : { opacity: 0, x: 0, y: 0, rotate: 0, scale: 0.6 }
                   }
                   transition={{ duration: 0.55, delay: crumb.delay, ease: "easeOut" }}
-                  className="absolute left-1/2 top-1/2 h-3 w-4 rounded-full bg-[#d7944f] shadow-[0_6px_10px_rgba(126,75,30,0.18)]"
+                  style={{ width: crumb.width, height: crumb.height }}
+                  className="absolute left-1/2 top-1/2 rounded-full bg-[#d7944f] shadow-[0_6px_10px_rgba(126,75,30,0.18)]"
                 />
               ))}
 
               <motion.span
                 animate={
                   stage === "cracking"
-                    ? { opacity: [0, 0.95, 0.2], scaleY: [0.2, 1, 0.9] }
-                    : { opacity: 0, scaleY: 0.4 }
+                    ? { opacity: [0, 0.95, 0.14], scaleY: [0.2, 1.08, 0.9], y: [0, -2, 0] }
+                    : { opacity: 0, scaleY: 0.4, y: 0 }
                 }
                 transition={{ duration: 0.35, delay: 0.08 }}
-                className="absolute left-1/2 top-[33%] z-20 h-16 w-[3px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(112,61,21,0.9),rgba(255,255,255,0.2))]"
+                className="absolute left-1/2 top-[34%] z-30 h-16 w-[3px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(112,61,21,0.9),rgba(255,255,255,0.2))]"
               />
 
               <motion.div
-                animate={stage === "paper" ? { x: -34, y: -10, rotate: -20 } : { x: 0, y: 0, rotate: -8 }}
-                transition={{ duration: 0.5 }}
-                className="absolute h-28 w-36 rounded-[55%_45%_52%_48%/56%_44%_56%_44%] border border-[#d59552]/70 bg-[linear-gradient(180deg,#f7cf8f,#d69048_62%,#ba7433)] shadow-[inset_0_10px_18px_rgba(255,255,255,0.25),inset_0_-10px_18px_rgba(135,77,27,0.18),0_16px_30px_rgba(139,86,35,0.28)]"
+                animate={
+                  stage === "paper"
+                    ? { opacity: 1, y: 0, scale: 1, rotate: 0 }
+                    : stage === "cracking"
+                      ? { opacity: [0, 1, 0.9], y: [18, 4, 0], scale: [0.82, 1.02, 0.96], rotate: [0, -2, 0] }
+                      : { opacity: 0, y: 18, scale: 0.82, rotate: 0 }
+                }
+                transition={{ duration: 0.48, delay: 0.16, ease: "easeOut" }}
+                className="absolute left-1/2 top-[42%] z-20 h-[92px] w-[70px] -translate-x-1/2 rounded-[14px] border border-[#d8c2a7] bg-[linear-gradient(180deg,#fffefb,#f6eddc)] shadow-[0_14px_26px_rgba(117,87,58,0.2)]"
               >
-                <span className="absolute left-6 top-4 h-12 w-1 rounded-full bg-white/20" />
-                <span className="absolute left-7 top-5 h-10 w-16 rounded-full bg-white/14 blur-md" />
-                <span className="absolute bottom-4 left-8 h-8 w-20 rounded-full border border-[#aa6a31]/25" />
+                <span className="absolute inset-x-3 top-4 h-px bg-[#cba87a]/20" />
+                <span className="absolute inset-y-3 left-1/2 w-px -translate-x-1/2 bg-[#d9c4a7]/32" />
+                <span className="absolute left-2 right-2 top-[42px] h-px bg-[#d9c4a7]/22" />
+              </motion.div>
+
+              <motion.div
+                animate={
+                  stage === "paper"
+                    ? { x: -72, y: 10, rotate: -30 }
+                    : stage === "cracking"
+                      ? { x: [-6, -18, -42], y: [0, 2, 6], rotate: [-8, -16, -22] }
+                      : { x: 0, y: 0, rotate: -7 }
+                }
+                transition={{ duration: 0.56, ease: "easeOut" }}
+                className="absolute z-20 h-[116px] w-[136px] rounded-[72%_28%_58%_42%/58%_34%_66%_42%] border border-[#c88440]/75 bg-[linear-gradient(180deg,#f7d295,#dfa15a_54%,#c77935)] shadow-[inset_0_12px_16px_rgba(255,255,255,0.22),inset_0_-12px_18px_rgba(124,70,24,0.2),0_20px_30px_rgba(139,86,35,0.28)]"
+                style={{ clipPath: "polygon(0 22%, 92% 0, 88% 100%, 0 78%)" }}
+              >
+                <span className="absolute left-3 top-6 h-16 w-24 rounded-full bg-white/12 blur-md" />
+                <span className="absolute right-5 top-4 h-20 w-10 rounded-full border border-[#a86731]/24" />
+                <span className="absolute bottom-4 left-4 h-10 w-16 rounded-full border border-[#8f531f]/18" />
+                <span className="absolute right-[-10px] top-[36px] h-10 w-8 rounded-full bg-[#f1bd78]" />
               </motion.div>
               <motion.div
-                animate={stage === "paper" ? { x: 34, y: 14, rotate: 24 } : { x: 0, y: 0, rotate: 12 }}
-                transition={{ duration: 0.5 }}
-                className="absolute h-28 w-36 rounded-[45%_55%_46%_54%/48%_52%_48%_52%] border border-[#d59552]/70 bg-[linear-gradient(180deg,#f8cf8f,#dc9549_62%,#be7634)] shadow-[inset_0_10px_18px_rgba(255,255,255,0.24),inset_0_-10px_18px_rgba(135,77,27,0.18),0_16px_30px_rgba(139,86,35,0.28)]"
+                animate={
+                  stage === "paper"
+                    ? { x: 72, y: 16, rotate: 32 }
+                    : stage === "cracking"
+                      ? { x: [6, 20, 46], y: [0, 4, 10], rotate: [10, 18, 26] }
+                      : { x: 0, y: 0, rotate: 9 }
+                }
+                transition={{ duration: 0.56, ease: "easeOut" }}
+                className="absolute z-20 h-[118px] w-[138px] rounded-[28%_72%_44%_56%/34%_56%_44%_66%] border border-[#c88440]/75 bg-[linear-gradient(180deg,#f7d295,#de9c54_54%,#c27431)] shadow-[inset_0_12px_16px_rgba(255,255,255,0.22),inset_0_-12px_18px_rgba(124,70,24,0.2),0_20px_30px_rgba(139,86,35,0.28)]"
+                style={{ clipPath: "polygon(8% 0, 100% 22%, 100% 78%, 12% 100%)" }}
               >
-                <span className="absolute right-6 top-5 h-12 w-1 rounded-full bg-white/20" />
-                <span className="absolute right-7 top-5 h-10 w-16 rounded-full bg-white/14 blur-md" />
-                <span className="absolute bottom-4 right-8 h-8 w-20 rounded-full border border-[#aa6a31]/25" />
+                <span className="absolute right-3 top-6 h-16 w-24 rounded-full bg-white/12 blur-md" />
+                <span className="absolute left-5 top-4 h-20 w-10 rounded-full border border-[#a86731]/24" />
+                <span className="absolute bottom-4 right-4 h-10 w-16 rounded-full border border-[#8f531f]/18" />
+                <span className="absolute left-[-10px] top-[38px] h-10 w-8 rounded-full bg-[#f1bd78]" />
+              </motion.div>
+
+              <motion.div
+                animate={
+                  stage === "paper"
+                    ? { opacity: 0, scale: 0.8 }
+                    : stage === "cracking"
+                      ? { opacity: [1, 0.85, 0.1], scale: [1, 1.08, 0.72], y: [0, 3, 8] }
+                      : { opacity: 1, scale: 1, y: 0 }
+                }
+                transition={{ duration: 0.45 }}
+                className="absolute z-30 h-[78px] w-[92px] rounded-[50%] border border-[#d49a59]/70 bg-[linear-gradient(180deg,#f6cf91,#d58d44)] shadow-[inset_0_8px_14px_rgba(255,255,255,0.18),0_10px_20px_rgba(145,89,38,0.2)]"
+              >
+                <span className="absolute inset-x-5 top-6 h-[18px] rounded-full bg-[#8e5626]/25 blur-sm" />
+                <span className="absolute left-1/2 top-[14px] h-[46px] w-[28px] -translate-x-1/2 rounded-[50%] border-x border-[#a5642f]/45" />
               </motion.div>
             </motion.button>
 
@@ -409,16 +478,16 @@ export default function HomePage() {
                 stage === "paper"
                   ? {
                       opacity: 1,
-                      y: 0,
-                      scale: [0.92, 1.04, 1],
-                      rotate: [0, -2, 0],
+                      y: -6,
+                      scale: [0.86, 1.06, 1],
+                      rotate: [0, -3, 0],
                       rotateX: [84, 0, 0]
                     }
                   : { opacity: 0, y: 12, scale: 0.9, rotate: -2, rotateX: 84 }
               }
-              transition={{ duration: 0.55, delay: 0.15 }}
+              transition={{ duration: 0.62, delay: 0.18 }}
               style={{ transformPerspective: 900 }}
-              className="paper-grain relative rounded-2xl border border-[var(--paper-edge)] px-6 py-4 text-center shadow-paper"
+              className="paper-grain relative z-40 rounded-2xl border border-[var(--paper-edge)] px-6 py-4 text-center shadow-paper"
             >
               <span className="absolute inset-x-5 top-2 h-px bg-[#b88d5d]/20" />
               <p className="text-xs tracking-[0.3em] text-ink/45">FORTUNE</p>
@@ -426,7 +495,9 @@ export default function HomePage() {
             </motion.button>
 
             <p className="max-w-xs text-center text-sm leading-6 text-ink/70">
-              {stage === "idle" ? "先輕點餅乾，讓今天的運氣慢慢裂開。" : "餅乾已經打開，紙條正在等你。"}
+              {stage === "idle"
+                ? "先輕點餅乾，沿著中間裂開，紙條才會慢慢浮出來。"
+                : "餅乾碎開了，點紙條把它完整展開。"}
             </p>
           </div>
         )}
