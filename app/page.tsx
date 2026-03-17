@@ -47,6 +47,14 @@ const crumbPieces = [
   { id: "crumb-7", x: 40, y: 76, rotate: -18, delay: 0.18, width: 12, height: 8 },
   { id: "crumb-8", x: -28, y: 82, rotate: 22, delay: 0.2, width: 14, height: 9 }
 ];
+const dustPieces = [
+  { id: "dust-1", x: -54, y: -18, delay: 0.02 },
+  { id: "dust-2", x: -22, y: -48, delay: 0.06 },
+  { id: "dust-3", x: 24, y: -44, delay: 0.1 },
+  { id: "dust-4", x: 58, y: -8, delay: 0.13 },
+  { id: "dust-5", x: -44, y: 24, delay: 0.16 },
+  { id: "dust-6", x: 44, y: 28, delay: 0.18 }
+];
 
 export default function HomePage() {
   const [seed, setSeed] = useState("");
@@ -331,7 +339,7 @@ export default function HomePage() {
         <p className="mt-2 text-sm leading-6 text-ink/80">{streakHint}</p>
       </section>
 
-      <section className="relative mt-8 flex min-h-[390px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/50 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.8),transparent_42%),linear-gradient(180deg,rgba(255,247,232,0.9),rgba(248,220,180,0.92))] px-4 py-8 shadow-cookie">
+      <section className="relative mt-8 flex min-h-[400px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/50 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.8),transparent_42%),linear-gradient(180deg,rgba(255,247,232,0.9),rgba(248,220,180,0.92))] px-4 py-8 shadow-cookie">
         <div className="absolute -top-10 h-32 w-32 rounded-full bg-white/30 blur-3xl" />
         <div className="absolute bottom-4 left-1/2 h-24 w-64 -translate-x-1/2 rounded-full bg-[#c98e4d]/25 blur-3xl" />
         <motion.div
@@ -355,7 +363,7 @@ export default function HomePage() {
                   : { rotate: 0, scale: 1 }
               }
               transition={{ duration: 0.7 }}
-              className="relative flex h-[240px] w-[280px] items-center justify-center"
+              className="relative flex h-[250px] w-[290px] items-center justify-center"
               aria-label="Open fortune cookie"
             >
               <motion.span
@@ -393,6 +401,24 @@ export default function HomePage() {
                 />
               ))}
 
+              {dustPieces.map((dust) => (
+                <motion.span
+                  key={dust.id}
+                  animate={
+                    stage === "cracking"
+                      ? {
+                          opacity: [0, 0.34, 0],
+                          x: [0, dust.x],
+                          y: [0, dust.y],
+                          scale: [0.2, 1.4, 1.8]
+                        }
+                      : { opacity: 0, x: 0, y: 0, scale: 0.1 }
+                  }
+                  transition={{ duration: 0.5, delay: dust.delay, ease: "easeOut" }}
+                  className="absolute left-1/2 top-1/2 h-6 w-6 rounded-full bg-[#f1cf9f]/60 blur-md"
+                />
+              ))}
+
               <motion.span
                 animate={
                   stage === "cracking"
@@ -406,17 +432,21 @@ export default function HomePage() {
               <motion.div
                 animate={
                   stage === "paper"
-                    ? { opacity: 1, y: 0, scale: 1, rotate: 0 }
+                    ? { opacity: 1, y: -2, scale: 1, rotate: 0 }
                     : stage === "cracking"
-                      ? { opacity: [0, 1, 0.9], y: [18, 4, 0], scale: [0.82, 1.02, 0.96], rotate: [0, -2, 0] }
-                      : { opacity: 0, y: 18, scale: 0.82, rotate: 0 }
+                      ? { opacity: [0, 1, 0.95], y: [30, 10, 2], scale: [0.68, 0.92, 0.96], rotate: [0, -2, 0] }
+                      : { opacity: 0, y: 30, scale: 0.65, rotate: 0 }
                 }
-                transition={{ duration: 0.48, delay: 0.16, ease: "easeOut" }}
-                className="absolute left-1/2 top-[42%] z-20 h-[92px] w-[70px] -translate-x-1/2 rounded-[14px] border border-[#d8c2a7] bg-[linear-gradient(180deg,#fffefb,#f6eddc)] shadow-[0_14px_26px_rgba(117,87,58,0.2)]"
+                transition={{ duration: 0.54, delay: 0.18, ease: "easeOut" }}
+                className="absolute left-1/2 top-[43%] z-20 -translate-x-1/2"
               >
-                <span className="absolute inset-x-3 top-4 h-px bg-[#cba87a]/20" />
-                <span className="absolute inset-y-3 left-1/2 w-px -translate-x-1/2 bg-[#d9c4a7]/32" />
-                <span className="absolute left-2 right-2 top-[42px] h-px bg-[#d9c4a7]/22" />
+                <div className="relative h-[100px] w-[82px]">
+                  <span className="absolute inset-y-0 left-0 w-1/2 rounded-l-[16px] border border-r-0 border-[#d8c2a7] bg-[linear-gradient(180deg,#fffefb,#f1e6d1)] shadow-[0_12px_24px_rgba(117,87,58,0.18)]" />
+                  <span className="absolute inset-y-0 right-0 w-1/2 rounded-r-[16px] border border-l-0 border-[#d8c2a7] bg-[linear-gradient(180deg,#fffefb,#f5ecdb)] shadow-[0_12px_24px_rgba(117,87,58,0.18)]" />
+                  <span className="absolute inset-y-2 left-1/2 z-10 w-px -translate-x-1/2 bg-[#d9c4a7]/50" />
+                  <span className="absolute left-3 right-3 top-5 h-px bg-[#cba87a]/20" />
+                  <span className="absolute left-3 right-3 top-[49px] h-px bg-[#d9c4a7]/22" />
+                </div>
               </motion.div>
 
               <motion.div
@@ -428,13 +458,14 @@ export default function HomePage() {
                       : { x: 0, y: 0, rotate: -7 }
                 }
                 transition={{ duration: 0.56, ease: "easeOut" }}
-                className="absolute z-20 h-[116px] w-[136px] rounded-[72%_28%_58%_42%/58%_34%_66%_42%] border border-[#c88440]/75 bg-[linear-gradient(180deg,#f7d295,#dfa15a_54%,#c77935)] shadow-[inset_0_12px_16px_rgba(255,255,255,0.22),inset_0_-12px_18px_rgba(124,70,24,0.2),0_20px_30px_rgba(139,86,35,0.28)]"
+                className="absolute z-20 h-[126px] w-[152px] rounded-[74%_26%_60%_40%/58%_32%_68%_42%] border border-[#c88440]/75 bg-[linear-gradient(180deg,#f7d295,#dfa15a_54%,#c77935)] shadow-[inset_0_12px_16px_rgba(255,255,255,0.22),inset_0_-12px_18px_rgba(124,70,24,0.2),0_20px_30px_rgba(139,86,35,0.28)]"
                 style={{ clipPath: "polygon(0 22%, 92% 0, 88% 100%, 0 78%)" }}
               >
                 <span className="absolute left-3 top-6 h-16 w-24 rounded-full bg-white/12 blur-md" />
                 <span className="absolute right-5 top-4 h-20 w-10 rounded-full border border-[#a86731]/24" />
                 <span className="absolute bottom-4 left-4 h-10 w-16 rounded-full border border-[#8f531f]/18" />
                 <span className="absolute right-[-10px] top-[36px] h-10 w-8 rounded-full bg-[#f1bd78]" />
+                <span className="absolute right-0 top-[22px] h-[76px] w-[26px] bg-[radial-gradient(circle_at_left,#8e5626_0%,#b36d31_36%,transparent_70%)] opacity-80" />
               </motion.div>
               <motion.div
                 animate={
@@ -445,13 +476,14 @@ export default function HomePage() {
                       : { x: 0, y: 0, rotate: 9 }
                 }
                 transition={{ duration: 0.56, ease: "easeOut" }}
-                className="absolute z-20 h-[118px] w-[138px] rounded-[28%_72%_44%_56%/34%_56%_44%_66%] border border-[#c88440]/75 bg-[linear-gradient(180deg,#f7d295,#de9c54_54%,#c27431)] shadow-[inset_0_12px_16px_rgba(255,255,255,0.22),inset_0_-12px_18px_rgba(124,70,24,0.2),0_20px_30px_rgba(139,86,35,0.28)]"
+                className="absolute z-20 h-[126px] w-[152px] rounded-[26%_74%_42%_58%/32%_58%_42%_68%] border border-[#c88440]/75 bg-[linear-gradient(180deg,#f7d295,#de9c54_54%,#c27431)] shadow-[inset_0_12px_16px_rgba(255,255,255,0.22),inset_0_-12px_18px_rgba(124,70,24,0.2),0_20px_30px_rgba(139,86,35,0.28)]"
                 style={{ clipPath: "polygon(8% 0, 100% 22%, 100% 78%, 12% 100%)" }}
               >
                 <span className="absolute right-3 top-6 h-16 w-24 rounded-full bg-white/12 blur-md" />
                 <span className="absolute left-5 top-4 h-20 w-10 rounded-full border border-[#a86731]/24" />
                 <span className="absolute bottom-4 right-4 h-10 w-16 rounded-full border border-[#8f531f]/18" />
                 <span className="absolute left-[-10px] top-[38px] h-10 w-8 rounded-full bg-[#f1bd78]" />
+                <span className="absolute left-0 top-[22px] h-[76px] w-[26px] bg-[radial-gradient(circle_at_right,#8e5626_0%,#b36d31_36%,transparent_70%)] opacity-80" />
               </motion.div>
 
               <motion.div
@@ -463,10 +495,12 @@ export default function HomePage() {
                       : { opacity: 1, scale: 1, y: 0 }
                 }
                 transition={{ duration: 0.45 }}
-                className="absolute z-30 h-[78px] w-[92px] rounded-[50%] border border-[#d49a59]/70 bg-[linear-gradient(180deg,#f6cf91,#d58d44)] shadow-[inset_0_8px_14px_rgba(255,255,255,0.18),0_10px_20px_rgba(145,89,38,0.2)]"
+                className="absolute z-30 h-[92px] w-[126px] rounded-[52%_48%_54%_46%/56%_58%_42%_44%] border border-[#d49a59]/70 bg-[linear-gradient(180deg,#f6cf91,#d58d44)] shadow-[inset_0_8px_14px_rgba(255,255,255,0.18),0_10px_20px_rgba(145,89,38,0.2)]"
               >
-                <span className="absolute inset-x-5 top-6 h-[18px] rounded-full bg-[#8e5626]/25 blur-sm" />
-                <span className="absolute left-1/2 top-[14px] h-[46px] w-[28px] -translate-x-1/2 rounded-[50%] border-x border-[#a5642f]/45" />
+                <span className="absolute inset-x-5 top-7 h-[20px] rounded-full bg-[#8e5626]/22 blur-sm" />
+                <span className="absolute left-1/2 top-[16px] h-[54px] w-[34px] -translate-x-1/2 rounded-[50%] border-x border-[#a5642f]/45" />
+                <span className="absolute left-[22px] top-[16px] h-[52px] w-[34px] rounded-full border-t border-[#a5642f]/18" />
+                <span className="absolute right-[22px] top-[16px] h-[52px] w-[34px] rounded-full border-t border-[#a5642f]/18" />
               </motion.div>
             </motion.button>
 
