@@ -58,52 +58,17 @@ const dustPieces = [
 
 function FullCookieArtwork() {
   return (
-    <svg viewBox="0 0 320 240" className="h-full w-full drop-shadow-[0_24px_30px_rgba(120,72,25,0.28)]">
-      <defs>
-        <linearGradient id="cookieShell" x1="76" y1="54" x2="244" y2="196" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#f7cf8b" />
-          <stop offset="0.45" stopColor="#e9a75c" />
-          <stop offset="1" stopColor="#bf722f" />
-        </linearGradient>
-        <linearGradient id="cookieRim" x1="112" y1="80" x2="238" y2="168" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#f9dfa9" />
-          <stop offset="1" stopColor="#cc8041" />
-        </linearGradient>
-        <radialGradient id="cookieGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(166 90) rotate(90) scale(78 112)">
-          <stop stopColor="white" stopOpacity="0.62" />
-          <stop offset="1" stopColor="white" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <path
-        d="M71 154C71 105 113 68 161 68C197 68 229 90 244 121C250 132 257 148 257 161C257 178 248 190 232 196C208 206 186 176 167 173C146 170 121 205 94 196C79 191 71 176 71 154Z"
-        fill="url(#cookieShell)"
-      />
-      <path
-        d="M105 163C119 151 132 129 150 107C162 93 178 82 198 78C226 73 247 94 247 121C247 139 231 150 216 151C199 152 189 137 174 137C160 137 149 148 142 157C131 170 120 189 102 190C85 191 74 178 74 160C74 140 87 123 103 108"
-        fill="none"
-        stroke="url(#cookieRim)"
-        strokeWidth="23"
-        strokeLinecap="round"
-      />
-      <path
-        d="M92 168C109 171 119 161 131 145C146 124 158 107 176 94C190 84 208 78 223 80"
-        fill="none"
-        stroke="#8e5322"
-        strokeOpacity="0.32"
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M171 111C175 130 164 149 145 161"
-        fill="none"
-        stroke="#9f5e28"
-        strokeOpacity="0.32"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <ellipse cx="163" cy="111" rx="82" ry="50" fill="url(#cookieGlow)" />
-      <ellipse cx="181" cy="177" rx="75" ry="18" fill="#8f5626" opacity="0.18" />
-    </svg>
+    <div className="relative flex h-full w-full items-center justify-center">
+      <span
+        className="select-none text-[172px] leading-none"
+        style={{
+          filter: "drop-shadow(0 18px 20px rgba(120,72,25,0.24))",
+          transform: "rotate(5deg)"
+        }}
+      >
+        🥠
+      </span>
+    </div>
   );
 }
 
@@ -111,50 +76,20 @@ function CookieHalfArtwork({ side }: { side: "left" | "right" }) {
   const isLeft = side === "left";
 
   return (
-    <svg viewBox="0 0 170 170" className="h-full w-full drop-shadow-[0_16px_24px_rgba(120,72,25,0.24)]">
-      <defs>
-        <linearGradient id={`halfShell-${side}`} x1="20" y1="24" x2="150" y2="150" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#f8d392" />
-          <stop offset="0.45" stopColor="#e3a25a" />
-          <stop offset="1" stopColor="#bf732f" />
-        </linearGradient>
-        <linearGradient id={`halfInner-${side}`} x1="56" y1="58" x2="122" y2="126" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#8f5524" />
-          <stop offset="1" stopColor="#cf8750" />
-        </linearGradient>
-      </defs>
-      <path
-        d={
-          isLeft
-            ? "M25 112C25 62 62 25 108 25C129 25 146 34 154 48C159 57 159 73 152 84C143 98 127 98 116 107C99 120 91 147 66 147C41 147 25 134 25 112Z"
-            : "M145 112C145 62 108 25 62 25C41 25 24 34 16 48C11 57 11 73 18 84C27 98 43 98 54 107C71 120 79 147 104 147C129 147 145 134 145 112Z"
-        }
-        fill={`url(#halfShell-${side})`}
+    <div className="relative h-full w-full overflow-hidden">
+      <span
+        className={`absolute top-1/2 select-none text-[172px] leading-none ${isLeft ? "left-0" : "right-0"}`}
+        style={{
+          filter: "drop-shadow(0 14px 18px rgba(120,72,25,0.22))",
+          transform: `translateY(-50%) rotate(${isLeft ? "-2deg" : "2deg"})`
+        }}
+      >
+        🥠
+      </span>
+      <span
+        className={`absolute top-[38%] h-[70px] w-[22px] rounded-full bg-[#744214]/25 blur-[8px] ${isLeft ? "right-0" : "left-0"}`}
       />
-      <path
-        d={
-          isLeft
-            ? "M103 55C92 67 86 81 77 92C66 106 49 110 35 109C35 83 51 57 76 42C89 34 105 31 118 33C117 42 111 47 103 55Z"
-            : "M67 55C78 67 84 81 93 92C104 106 121 110 135 109C135 83 119 57 94 42C81 34 65 31 52 33C53 42 59 47 67 55Z"
-        }
-        fill={`url(#halfInner-${side})`}
-        opacity="0.78"
-      />
-      <path
-        d={isLeft ? "M108 46C95 61 88 74 81 88" : "M62 46C75 61 82 74 89 88"}
-        stroke="#fff4de"
-        strokeOpacity="0.34"
-        strokeWidth="7"
-        strokeLinecap="round"
-      />
-      <path
-        d={isLeft ? "M113 101C99 109 92 120 87 133" : "M57 101C71 109 78 120 83 133"}
-        stroke="#8f5423"
-        strokeOpacity="0.28"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-    </svg>
+    </div>
   );
 }
 
