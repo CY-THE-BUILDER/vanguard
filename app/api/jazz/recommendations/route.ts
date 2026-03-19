@@ -11,7 +11,7 @@ import {
   buildCuratedFeed,
   buildTasteProfile,
   buildTrackPick,
-  diversifyPicks,
+  isStrongFlavorMatch,
   rankPicksForVibe,
   isJazzAdjacentArtist,
   ListenerTasteProfile,
@@ -59,16 +59,7 @@ function albumMatchesActiveFlavor(
   pick: JazzPick,
   activeVibe: JazzPick["vibeTags"][number]
 ) {
-  const profile = vibeProfiles[activeVibe];
-  const decadeMatch = profile.preferredDecades.some(
-    ([start, end]) => pick.year >= start && pick.year <= end
-  );
-
-  return (
-    pick.vibeTags.includes(activeVibe) ||
-    profile.preferredSubgenres.includes(pick.subgenre) ||
-    decadeMatch
-  );
+  return isStrongFlavorMatch(pick, activeVibe);
 }
 
 function selectSeedArtistsForVibe(
@@ -79,6 +70,7 @@ function selectSeedArtistsForVibe(
   const rankedTopArtists = [...topArtists]
     .filter(isJazzAdjacentArtist)
     .sort((left, right) => scoreArtistForVibe(right, activeVibe) - scoreArtistForVibe(left, activeVibe))
+    .filter((artist) => scoreArtistForVibe(artist, activeVibe) >= 8)
     .filter((artist, index, list) => list.findIndex((entry) => entry.id === artist.id) === index);
 
   const anchorArtists = profile.anchorArtists
@@ -354,7 +346,10 @@ export async function GET(request: NextRequest) {
       savedTracks,
       tasteProfile
     );
-    const personalizedPicks = rankPicksForVibe([...searchedPicks, ...signalPicks], vibe, 5);
+    const strongPersonalizedPicks = [...searchedPicks, ...signalPicks].filter((pick) =>
+      isStrongFlavorMatch(pick, vibe)
+    );
+    const personalizedPicks = rankPicksForVibe(strongPersonalizedPicks, vibe, 5);
 
     if (personalizedPicks.length >= 3) {
       const seedNames = Array.from(
@@ -364,11 +359,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           mode: "personalized",
-          headline: "順著你的聆聽習慣往下走",
+          headline: "順著你最近的耳朵走",
           note:
             seedNames.length > 0
-              ? `順著你最近耳朵停留的方向，把 ${seedNames.join("、")} 附近的風景重新收成這一輪。`
-              : "這一輪順著你最近的聽感往前推，先替你留住幾張更貼近此刻的專輯。",
+              ? `這一輪順著 ${seedNames.join("、")} 附近的氣味往外展開，先替你留幾張更貼近 ${vibe} 的專輯。`
+              : `先照著你最近的聽感往前推一步，替你留幾張更貼近 ${vibe} 的專輯。`,
           picks: personalizedPicks
         },
         {

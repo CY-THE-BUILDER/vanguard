@@ -29,7 +29,7 @@ function createCoverArt(
 }
 
 function withCover(pick: Omit<JazzPick, "imageUrl">, palette: Parameters<typeof createCoverArt>[2]): JazzPick {
-  const artworkSourceUrl = pick.spotifyUrl;
+  const artworkSourceUrl = pick.artworkSourceUrl ?? pick.spotifyUrl;
 
   return {
     ...pick,
@@ -123,6 +123,42 @@ export const jazzPicks: JazzPick[] = [
   ),
   withCover(
     {
+      id: "speak-no-evil",
+      title: "Speak No Evil",
+      artist: "Wayne Shorter",
+      type: "album",
+      subgenre: "Modal Jazz",
+      vibeTags: ["Exploratory", "Late Night"],
+      recommendationReason: "輪廓是冷的，內裡卻很熱，越往後聽越會覺得這張把想像力留得很深。",
+      spotifyUrl: "https://open.spotify.com/search/Speak%20No%20Evil%20Wayne%20Shorter",
+      shareUrl: "https://open.spotify.com/search/Speak%20No%20Evil%20Wayne%20Shorter",
+      year: 1966,
+      durationLabel: "41 min",
+      accentColor: "#8f9582",
+      source: "curated"
+    },
+    { bg: "#131412", glow: "#394238", accent: "#a3b08a", text: "#f3efe4" }
+  ),
+  withCover(
+    {
+      id: "out-to-lunch",
+      title: "Out to Lunch!",
+      artist: "Eric Dolphy",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory"],
+      recommendationReason: "不是一張急著討好的專輯，但每一次偏離都很有必要，適合把耳朵往外再推一點。",
+      spotifyUrl: "https://open.spotify.com/search/Out%20to%20Lunch!%20Eric%20Dolphy",
+      shareUrl: "https://open.spotify.com/search/Out%20to%20Lunch!%20Eric%20Dolphy",
+      year: 1964,
+      durationLabel: "42 min",
+      accentColor: "#b79267",
+      source: "curated"
+    },
+    { bg: "#17120d", glow: "#534230", accent: "#c9a06f", text: "#f4eadc" }
+  ),
+  withCover(
+    {
       id: "head-hunters",
       title: "Head Hunters",
       artist: "Herbie Hancock",
@@ -138,6 +174,24 @@ export const jazzPicks: JazzPick[] = [
       source: "curated"
     },
     { bg: "#130f17", glow: "#3d2837", accent: "#ca7d3e", text: "#f4e9de" }
+  ),
+  withCover(
+    {
+      id: "sextant",
+      title: "Sextant",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion", "Exploratory"],
+      recommendationReason: "電氣聲響和即興在這裡纏得很緊，整張像一段持續升溫的夜行。",
+      spotifyUrl: "https://open.spotify.com/search/Sextant%20Herbie%20Hancock",
+      shareUrl: "https://open.spotify.com/search/Sextant%20Herbie%20Hancock",
+      year: 1973,
+      durationLabel: "39 min",
+      accentColor: "#bf7a4e",
+      source: "curated"
+    },
+    { bg: "#151017", glow: "#4b2c42", accent: "#d28a5b", text: "#f5e9de" }
   ),
   withCover(
     {
@@ -249,6 +303,24 @@ export const jazzPicks: JazzPick[] = [
   ),
   withCover(
     {
+      id: "undercurrent",
+      title: "Undercurrent",
+      artist: "Bill Evans & Jim Hall",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Late Night", "Focus"],
+      recommendationReason: "兩個人都把力道收得很低，卻讓每一次靠近都更清楚，適合安靜地整張放完。",
+      spotifyUrl: "https://open.spotify.com/search/Undercurrent%20Bill%20Evans%20Jim%20Hall",
+      shareUrl: "https://open.spotify.com/search/Undercurrent%20Bill%20Evans%20Jim%20Hall",
+      year: 1962,
+      durationLabel: "38 min",
+      accentColor: "#9ea18d",
+      source: "curated"
+    },
+    { bg: "#161715", glow: "#49483f", accent: "#bab79b", text: "#f3efe3" }
+  ),
+  withCover(
+    {
       id: "waltz-for-debby",
       title: "Waltz for Debby",
       artist: "Bill Evans Trio",
@@ -264,6 +336,24 @@ export const jazzPicks: JazzPick[] = [
       source: "curated"
     },
     { bg: "#181716", glow: "#47443d", accent: "#b9b18e", text: "#f4f0e6" }
+  ),
+  withCover(
+    {
+      id: "chet-baker-sings",
+      title: "Chet Baker Sings",
+      artist: "Chet Baker",
+      type: "album",
+      subgenre: "Cool Jazz",
+      vibeTags: ["Late Night", "Classic"],
+      recommendationReason: "聲線和小號都不急著把情緒說滿，越晚越能聽見它的分寸。",
+      spotifyUrl: "https://open.spotify.com/search/Chet%20Baker%20Sings%20Chet%20Baker",
+      shareUrl: "https://open.spotify.com/search/Chet%20Baker%20Sings%20Chet%20Baker",
+      year: 1954,
+      durationLabel: "38 min",
+      accentColor: "#b7a184",
+      source: "curated"
+    },
+    { bg: "#171411", glow: "#51463a", accent: "#ccb08b", text: "#f5eee2" }
   ),
   withCover(
     {
@@ -285,6 +375,48 @@ export const jazzPicks: JazzPick[] = [
   )
 ];
 
+const curatedPickIdsByVibe = {
+  Classic: [
+    "kind-of-blue",
+    "moanin",
+    "time-out",
+    "waltz-for-debby"
+  ],
+  Exploratory: [
+    "night-dreamer",
+    "speak-no-evil",
+    "out-to-lunch",
+    "the-epic",
+    "yellow"
+  ],
+  Fusion: [
+    "head-hunters",
+    "sextant",
+    "heavy-weather",
+    "black-radio",
+    "black-focus"
+  ],
+  "Late Night": [
+    "night-dreamer",
+    "undercurrent",
+    "waltz-for-debby",
+    "chet-baker-sings",
+    "kind-of-blue"
+  ],
+  Focus: [
+    "time-out",
+    "bright-size-life",
+    "undercurrent",
+    "source",
+    "black-focus"
+  ]
+} satisfies Record<JazzPick["vibeTags"][number], string[]>;
+
 export function getCuratedPicksForVibe(vibe: JazzPick["vibeTags"][number]) {
-  return jazzPicks.filter((pick) => pick.vibeTags.includes(vibe)).slice(0, 5);
+  const ids = curatedPickIdsByVibe[vibe];
+  const pickMap = new Map(jazzPicks.map((pick) => [pick.id, pick]));
+
+  return ids
+    .map((id) => pickMap.get(id))
+    .filter((pick): pick is JazzPick => Boolean(pick));
 }

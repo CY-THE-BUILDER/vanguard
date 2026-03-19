@@ -8,6 +8,7 @@ import { Toasts } from "@/components/toast";
 import { VibeFilter } from "@/components/vibe-filter";
 import { getCuratedPicksForVibe } from "@/data/jazz-picks";
 import { getSavedPicks, savePicks } from "@/lib/jazz-storage";
+import { buildCuratedFeed } from "@/lib/spotify-recommendations";
 import { sharePick } from "@/lib/share";
 import { JazzPick, RecommendationFeed, SpotifySession, ToastMessage, Vibe } from "@/types/jazz";
 
@@ -24,10 +25,7 @@ export function JazzApp() {
   });
   const [isLoadingSpotify, setIsLoadingSpotify] = useState(true);
   const [feed, setFeed] = useState<RecommendationFeed>({
-    mode: "curated",
-    headline: "先從這裡聽起",
-    note: "先把範圍收得剛剛好，讓今天第一張不必在太多選擇裡猶豫。",
-    picks: getCuratedPicksForVibe(defaultVibe)
+    ...buildCuratedFeed(defaultVibe, getCuratedPicksForVibe(defaultVibe))
   });
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
 
@@ -122,12 +120,7 @@ export function JazzApp() {
         }
       } catch {
         if (!ignore) {
-          setFeed({
-            mode: "curated",
-            headline: "先從這裡聽起",
-            note: "先把範圍收得剛剛好，讓今天第一張不必在太多選擇裡猶豫。",
-            picks: getCuratedPicksForVibe(activeVibe)
-          });
+          setFeed(buildCuratedFeed(activeVibe, getCuratedPicksForVibe(activeVibe)));
         }
       } finally {
         if (!ignore) {
@@ -227,7 +220,7 @@ export function JazzApp() {
                 </h1>
                 <p className="max-w-2xl text-base leading-7 text-mist sm:text-lg">
                   給每天打開 Spotify，卻不想把心情耗在選擇上的爵士樂迷。
-                  先替你留好幾張此刻值得播放的專輯與單曲。
+                  先替你留好幾張此刻值得播放的專輯。
                 </p>
               </div>
               <VibeFilter activeVibe={activeVibe} onChange={setActiveVibe} />

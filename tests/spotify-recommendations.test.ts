@@ -13,6 +13,11 @@ import {
 } from "@/lib/spotify-recommendations";
 
 describe("spotify recommendation mapping", () => {
+  function countOverlap(left: string[], right: string[]) {
+    const rightSet = new Set(right);
+    return left.filter((title) => rightSet.has(title)).length;
+  }
+
   it("maps a Spotify track to a pick with the exact album image and track url", () => {
     const pick = buildTrackPick(
       {
@@ -162,6 +167,49 @@ describe("spotify recommendation mapping", () => {
     expect(reason).not.toContain("最近常聽的年代感");
   });
 
+  it("writes different editorial reasons for the same album when the flavor changes", () => {
+    const tasteProfile = buildTasteProfile(
+      [
+        {
+          id: "artist-2",
+          name: "Herbie Hancock",
+          genres: ["jazz fusion", "jazz funk"]
+        }
+      ],
+      [],
+      [],
+      []
+    );
+
+    const fusionReason = buildAlbumRecommendationReason({
+      albumId: "album-2",
+      albumTitle: "Head Hunters",
+      albumArtist: "Herbie Hancock",
+      albumYear: 1973,
+      subgenre: "Fusion",
+      activeVibe: "Fusion",
+      tasteProfile,
+      sourceArtistName: "Herbie Hancock",
+      origin: "search"
+    });
+
+    const lateNightReason = buildAlbumRecommendationReason({
+      albumId: "album-2",
+      albumTitle: "Head Hunters",
+      albumArtist: "Herbie Hancock",
+      albumYear: 1973,
+      subgenre: "Fusion",
+      activeVibe: "Late Night",
+      tasteProfile,
+      sourceArtistName: "Herbie Hancock",
+      origin: "search"
+    });
+
+    expect(fusionReason).not.toEqual(lateNightReason);
+    expect(fusionReason).toContain("Head Hunters");
+    expect(lateNightReason).toContain("Head Hunters");
+  });
+
   it("scores artists differently by flavor so seeds can shift with the selected vibe", () => {
     const fusionArtist = {
       id: "artist-fusion",
@@ -248,11 +296,37 @@ describe("spotify recommendation mapping", () => {
       ),
       buildAlbumPick(
         {
+          id: "explore-2",
+          name: "Out to Lunch!",
+          release_date: "1964-01-01",
+          images: [{ url: "https://i.scdn.co/image/outtolunch" }],
+          external_urls: { spotify: "https://open.spotify.com/album/explore-2" },
+          artists: [{ id: "artist-dolphy", name: "Eric Dolphy" }]
+        },
+        { id: "artist-dolphy", name: "Eric Dolphy", genres: ["avant-garde jazz", "post-bop"] },
+        "Exploratory",
+        "search"
+      ),
+      buildAlbumPick(
+        {
           id: "fusion-1",
           name: "Head Hunters",
           release_date: "1973-10-26",
           images: [{ url: "https://i.scdn.co/image/hh" }],
           external_urls: { spotify: "https://open.spotify.com/album/fusion-1" },
+          artists: [{ id: "artist-herbie", name: "Herbie Hancock" }]
+        },
+        { id: "artist-herbie", name: "Herbie Hancock", genres: ["jazz fusion", "jazz funk"] },
+        "Fusion",
+        "search"
+      ),
+      buildAlbumPick(
+        {
+          id: "fusion-2",
+          name: "Sextant",
+          release_date: "1973-01-01",
+          images: [{ url: "https://i.scdn.co/image/sextant" }],
+          external_urls: { spotify: "https://open.spotify.com/album/fusion-2" },
           artists: [{ id: "artist-herbie", name: "Herbie Hancock" }]
         },
         { id: "artist-herbie", name: "Herbie Hancock", genres: ["jazz fusion", "jazz funk"] },
@@ -274,6 +348,19 @@ describe("spotify recommendation mapping", () => {
       ),
       buildAlbumPick(
         {
+          id: "late-2",
+          name: "Undercurrent",
+          release_date: "1962-01-01",
+          images: [{ url: "https://i.scdn.co/image/undercurrent" }],
+          external_urls: { spotify: "https://open.spotify.com/album/late-2" },
+          artists: [{ id: "artist-billevans", name: "Bill Evans & Jim Hall" }]
+        },
+        { id: "artist-billevans", name: "Bill Evans & Jim Hall", genres: ["piano jazz", "cool jazz"] },
+        "Late Night",
+        "search"
+      ),
+      buildAlbumPick(
+        {
           id: "focus-1",
           name: "Bright Size Life",
           release_date: "1976-01-01",
@@ -287,12 +374,17 @@ describe("spotify recommendation mapping", () => {
       )
     ];
 
-    const fusionShelf = rankPicksForVibe(candidates, "Fusion", 3).map((pick) => pick.title);
-    const lateNightShelf = rankPicksForVibe(candidates, "Late Night", 3).map((pick) => pick.title);
+    const exploratoryShelf = rankPicksForVibe(candidates, "Exploratory", 4).map((pick) => pick.title);
+    const fusionShelf = rankPicksForVibe(candidates, "Fusion", 4).map((pick) => pick.title);
+    const lateNightShelf = rankPicksForVibe(candidates, "Late Night", 4).map((pick) => pick.title);
 
+    expect(exploratoryShelf).toContain("Out to Lunch!");
     expect(fusionShelf).not.toEqual(lateNightShelf);
     expect(fusionShelf[0]).toBe("Head Hunters");
     expect(lateNightShelf).toContain("Night Dreamer");
+    expect(countOverlap(exploratoryShelf, fusionShelf)).toBeLessThanOrEqual(1);
+    expect(countOverlap(fusionShelf, lateNightShelf)).toBeLessThanOrEqual(1);
+    expect(countOverlap(exploratoryShelf, lateNightShelf)).toBeLessThanOrEqual(2);
     expect(lateNightShelf).not.toEqual(fusionShelf);
   });
 });
