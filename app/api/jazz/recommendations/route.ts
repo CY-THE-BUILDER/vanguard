@@ -13,6 +13,7 @@ import {
   buildTrackPick,
   isStrongFlavorMatch,
   rankPicksForVibe,
+  selectFreshPicks,
   isJazzAdjacentArtist,
   ListenerTasteProfile,
   parseVibe,
@@ -300,14 +301,22 @@ function buildSignalDrivenPicks(
 
 export async function GET(request: NextRequest) {
   const vibe = parseVibe(request.nextUrl.searchParams.get("vibe"));
+  const excludedIds = new Set(
+    (request.nextUrl.searchParams.get("exclude") ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+  );
   const accessToken = await getValidSpotifyAccessToken();
 
   if (!accessToken) {
     const hydratedCurated = await Promise.all(
-      getCuratedPicksForVibe(vibe).map((pick) => hydratePublicArtworkForPick(pick))
+      getCuratedPicksForVibe(vibe, { limit: 8, excludeIds: excludedIds }).map((pick) =>
+        hydratePublicArtworkForPick(pick)
+      )
     );
 
-    return NextResponse.json(buildCuratedFeed(vibe, hydratedCurated), {
+    return NextResponse.json(buildCuratedFeed(vibe, selectFreshPicks(hydratedCurated, excludedIds, 5)), {
       headers: { "Cache-Control": "no-store" }
     });
   }
@@ -349,7 +358,11 @@ export async function GET(request: NextRequest) {
     const strongPersonalizedPicks = [...searchedPicks, ...signalPicks].filter((pick) =>
       isStrongFlavorMatch(pick, vibe)
     );
-    const personalizedPicks = rankPicksForVibe(strongPersonalizedPicks, vibe, 5);
+    const personalizedPicks = selectFreshPicks(
+      rankPicksForVibe(strongPersonalizedPicks, vibe, 12),
+      excludedIds,
+      5
+    );
 
     if (personalizedPicks.length >= 3) {
       const seedNames = Array.from(
@@ -373,11 +386,13 @@ export async function GET(request: NextRequest) {
     }
 
     const hydratedCurated = await Promise.all(
-      getCuratedPicksForVibe(vibe).map((pick) => hydrateCuratedPick(accessToken, pick))
+      getCuratedPicksForVibe(vibe, { limit: 8, excludeIds: excludedIds }).map((pick) =>
+        hydrateCuratedPick(accessToken, pick)
+      )
     );
 
     return NextResponse.json(
-      buildCuratedFeed(vibe, hydratedCurated),
+      buildCuratedFeed(vibe, selectFreshPicks(hydratedCurated, excludedIds, 5)),
       {
         headers: { "Cache-Control": "no-store" }
       }
@@ -385,10 +400,12 @@ export async function GET(request: NextRequest) {
   } catch {
     clearSpotifyCookies();
     const hydratedCurated = await Promise.all(
-      getCuratedPicksForVibe(vibe).map((pick) => hydratePublicArtworkForPick(pick))
+      getCuratedPicksForVibe(vibe, { limit: 8, excludeIds: excludedIds }).map((pick) =>
+        hydratePublicArtworkForPick(pick)
+      )
     );
 
-    return NextResponse.json(buildCuratedFeed(vibe, hydratedCurated), {
+    return NextResponse.json(buildCuratedFeed(vibe, selectFreshPicks(hydratedCurated, excludedIds, 5)), {
       headers: { "Cache-Control": "no-store" }
     });
   }

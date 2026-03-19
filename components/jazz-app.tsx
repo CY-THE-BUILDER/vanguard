@@ -4,12 +4,22 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { SavedPicks } from "@/components/saved-picks";
+import { ShareSheet } from "@/components/share-sheet";
 import { Toasts } from "@/components/toast";
 import { VibeFilter } from "@/components/vibe-filter";
 import { getCuratedPicksForVibe } from "@/data/jazz-picks";
 import { getSavedPicks, savePicks } from "@/lib/jazz-storage";
+import { getRecentRecommendationIds, rememberRecommendationIds } from "@/lib/recommendation-history";
 import { buildCuratedFeed } from "@/lib/spotify-recommendations";
-import { sharePick } from "@/lib/share";
+import {
+  buildFacebookShareUrl,
+  buildInstagramLaunchUrl,
+  buildInstagramWebUrl,
+  buildPickSharePayload,
+  buildSmsShareUrl,
+  copyShareText,
+  sharePick
+} from "@/lib/share";
 import { JazzPick, RecommendationFeed, SpotifySession, ToastMessage, Vibe } from "@/types/jazz";
 
 const defaultVibe: Vibe = "Classic";
@@ -24,6 +34,7 @@ export function JazzApp() {
     connected: false
   });
   const [isLoadingSpotify, setIsLoadingSpotify] = useState(true);
+  const [shareTarget, setShareTarget] = useState<JazzPick | null>(null);
   const [feed, setFeed] = useState<RecommendationFeed>({
     ...buildCuratedFeed(defaultVibe, getCuratedPicksForVibe(defaultVibe))
   });
@@ -104,11 +115,17 @@ export function JazzApp() {
 
     async function loadRecommendations() {
       setIsLoadingFeed(true);
+      const excludeIds = Array.from(
+        new Set([...savedIds, ...getRecentRecommendationIds(activeVibe)])
+      );
 
       try {
-        const response = await fetch(`/api/jazz/recommendations?vibe=${encodeURIComponent(activeVibe)}`, {
-          cache: "no-store"
-        });
+        const response = await fetch(
+          `/api/jazz/recommendations?vibe=${encodeURIComponent(activeVibe)}&exclude=${encodeURIComponent(excludeIds.join(","))}`,
+          {
+            cache: "no-store"
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to load recommendations.");
@@ -117,10 +134,24 @@ export function JazzApp() {
         const nextFeed = (await response.json()) as RecommendationFeed;
         if (!ignore) {
           setFeed(nextFeed);
+          rememberRecommendationIds(
+            activeVibe,
+            nextFeed.picks.map((pick) => pick.id)
+          );
         }
       } catch {
         if (!ignore) {
-          setFeed(buildCuratedFeed(activeVibe, getCuratedPicksForVibe(activeVibe)));
+          const fallbackFeed = buildCuratedFeed(
+            activeVibe,
+            getCuratedPicksForVibe(activeVibe, {
+              excludeIds: new Set(excludeIds)
+            })
+          );
+          setFeed(fallbackFeed);
+          rememberRecommendationIds(
+            activeVibe,
+            fallbackFeed.picks.map((pick) => pick.id)
+          );
         }
       } finally {
         if (!ignore) {
@@ -134,7 +165,7 @@ export function JazzApp() {
     return () => {
       ignore = true;
     };
-  }, [activeVibe, spotifySession.connected]);
+  }, [activeVibe, spotifySession.connected, savedIds]);
 
   function handleToggleSave(pick: JazzPick) {
     setSavedPicks((current) => {
@@ -146,21 +177,19 @@ export function JazzApp() {
     });
   }
 
-  async function handleShare(pick: JazzPick) {
+  async function handleNativeShare(pick: JazzPick) {
     try {
-      const result = await sharePick({
-        title: `${pick.title} · ${pick.artist}`,
-        text: `今天先從 ${pick.title} 開始，來自 ${pick.artist}。`,
-        url: pick.shareUrl
-      });
+      const result = await sharePick(buildPickSharePayload(pick));
 
       if (result.status === "shared") {
         pushToast("已送出分享。");
+        setShareTarget(null);
         return;
       }
 
       if (result.status === "copied") {
         pushToast("連結已複製。");
+        setShareTarget(null);
         return;
       }
 
@@ -172,6 +201,49 @@ export function JazzApp() {
 
       pushToast("分享已取消。");
     }
+  }
+
+  function handleShare(pick: JazzPick) {
+    setShareTarget(pick);
+  }
+
+  async function handleTextShare(pick: JazzPick) {
+    const payload = buildPickSharePayload(pick);
+    const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      window.location.href = buildSmsShareUrl(payload);
+      setShareTarget(null);
+      return;
+    }
+
+    await handleNativeShare(pick);
+  }
+
+  function handleFacebookShare(pick: JazzPick) {
+    window.open(buildFacebookShareUrl(buildPickSharePayload(pick)), "_blank", "noopener,noreferrer");
+    pushToast("已開啟 Facebook 分享頁。");
+    setShareTarget(null);
+  }
+
+  async function handleInstagramShare(pick: JazzPick) {
+    const payload = buildPickSharePayload(pick);
+    const copyResult = await copyShareText(payload);
+    const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+
+    window.location.assign(isMobile ? buildInstagramLaunchUrl() : buildInstagramWebUrl());
+    pushToast(
+      copyResult.status === "copied"
+        ? "貼文文字已複製，接著到 Instagram 貼上。"
+        : "已開啟 Instagram。"
+    );
+    setShareTarget(null);
+  }
+
+  async function handleCopyLink(pick: JazzPick) {
+    const result = await copyShareText(buildPickSharePayload(pick));
+    pushToast(result.status === "copied" ? "分享文字與連結已複製。" : "目前無法複製連結。");
+    setShareTarget(null);
   }
 
   async function handleSpotifyLogout() {
@@ -202,6 +274,14 @@ export function JazzApp() {
   return (
     <>
       <Toasts toasts={toasts} />
+      <ShareSheet
+        pick={shareTarget}
+        onClose={() => setShareTarget(null)}
+        onTextShare={handleTextShare}
+        onFacebookShare={handleFacebookShare}
+        onInstagramShare={handleInstagramShare}
+        onCopyLink={handleCopyLink}
+      />
       <main className="relative overflow-hidden">
         <div className="ambient ambient-left" />
         <div className="ambient ambient-right" />

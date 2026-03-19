@@ -329,6 +329,20 @@ export function rankPicksForVibe(picks: JazzPick[], vibe: Vibe, limit = 5) {
   return diversifyPicks(deduped, vibe, limit);
 }
 
+export function selectFreshPicks(picks: JazzPick[], excludedIds: Set<string>, limit = 5) {
+  const deduped = dedupePicks(picks);
+
+  if (excludedIds.size === 0) {
+    return deduped.slice(0, limit);
+  }
+
+  const fresh = deduped.filter((pick) => !excludedIds.has(pick.id));
+  const seen = new Set(fresh.map((pick) => pick.id));
+  const fallback = deduped.filter((pick) => !seen.has(pick.id));
+
+  return [...fresh, ...fallback].slice(0, limit);
+}
+
 export function isJazzAdjacentArtist(artist: SpotifyArtistEntity) {
   const haystack = [artist.name, ...(artist.genres ?? [])].join(" ");
   return /jazz|fusion|bebop|bop|swing|blue note|improv|soul jazz/i.test(haystack);

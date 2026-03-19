@@ -8,6 +8,7 @@ import {
   diversifyPicks,
   inferVibes,
   rankPicksForVibe,
+  selectFreshPicks,
   scoreArtistForVibe,
   scorePickForVibe
 } from "@/lib/spotify-recommendations";
@@ -386,5 +387,40 @@ describe("spotify recommendation mapping", () => {
     expect(countOverlap(fusionShelf, lateNightShelf)).toBeLessThanOrEqual(1);
     expect(countOverlap(exploratoryShelf, lateNightShelf)).toBeLessThanOrEqual(2);
     expect(lateNightShelf).not.toEqual(fusionShelf);
+  });
+
+  it("prefers fresh personalized picks before reusing previously seen albums", () => {
+    const candidates = [
+      buildAlbumPick(
+        {
+          id: "album-fresh-1",
+          name: "Sextant",
+          release_date: "1973-01-01",
+          images: [{ url: "https://i.scdn.co/image/sextant" }],
+          external_urls: { spotify: "https://open.spotify.com/album/fresh-1" },
+          artists: [{ id: "artist-herbie", name: "Herbie Hancock" }]
+        },
+        { id: "artist-herbie", name: "Herbie Hancock", genres: ["jazz fusion", "jazz funk"] },
+        "Fusion",
+        "search"
+      ),
+      buildAlbumPick(
+        {
+          id: "album-seen-1",
+          name: "Head Hunters",
+          release_date: "1973-10-26",
+          images: [{ url: "https://i.scdn.co/image/hh" }],
+          external_urls: { spotify: "https://open.spotify.com/album/seen-1" },
+          artists: [{ id: "artist-herbie", name: "Herbie Hancock" }]
+        },
+        { id: "artist-herbie", name: "Herbie Hancock", genres: ["jazz fusion", "jazz funk"] },
+        "Fusion",
+        "search"
+      )
+    ];
+
+    const shelf = selectFreshPicks(candidates, new Set(["spotify-album-album-seen-1"]), 2);
+
+    expect(shelf[0].title).toBe("Sextant");
   });
 });

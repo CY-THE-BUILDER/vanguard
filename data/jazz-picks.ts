@@ -412,11 +412,23 @@ const curatedPickIdsByVibe = {
   ]
 } satisfies Record<JazzPick["vibeTags"][number], string[]>;
 
-export function getCuratedPicksForVibe(vibe: JazzPick["vibeTags"][number]) {
+export function getCuratedPicksForVibe(
+  vibe: JazzPick["vibeTags"][number],
+  options?: { limit?: number; excludeIds?: Set<string> }
+) {
   const ids = curatedPickIdsByVibe[vibe];
   const pickMap = new Map(jazzPicks.map((pick) => [pick.id, pick]));
-
-  return ids
+  const ordered = ids
     .map((id) => pickMap.get(id))
     .filter((pick): pick is JazzPick => Boolean(pick));
+
+  const alternates = jazzPicks.filter(
+    (pick) => pick.vibeTags.includes(vibe) && !ordered.some((entry) => entry.id === pick.id)
+  );
+  const candidates = [...ordered, ...alternates];
+  const excludedIds = options?.excludeIds ?? new Set<string>();
+  const fresh = candidates.filter((pick) => !excludedIds.has(pick.id));
+  const fallback = candidates.filter((pick) => excludedIds.has(pick.id));
+
+  return [...fresh, ...fallback].slice(0, options?.limit ?? 5);
 }

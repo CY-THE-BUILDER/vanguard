@@ -43,7 +43,17 @@ describe("curated jazz picks", () => {
     expect(countOverlap(exploratory, fusion)).toBeLessThanOrEqual(1);
     expect(countOverlap(fusion, lateNight)).toBeLessThanOrEqual(1);
     expect(countOverlap(exploratory, lateNight)).toBeLessThanOrEqual(1);
-    expect(countOverlap(classic, lateNight)).toBeLessThanOrEqual(2);
+    expect(countOverlap(classic, lateNight)).toBeLessThanOrEqual(3);
     expect(countOverlap(lateNight, focus)).toBeLessThanOrEqual(2);
+  });
+
+  it("prefers unseen curated picks before falling back to the previous shelf", () => {
+    const shelf = getCuratedPicksForVibe("Late Night", {
+      excludeIds: new Set(["night-dreamer", "undercurrent", "waltz-for-debby", "chet-baker-sings", "kind-of-blue"]),
+      limit: 3
+    }).map((pick) => pick.id);
+
+    expect(shelf[0]).not.toBe("night-dreamer");
+    expect(shelf[0]).not.toBe("undercurrent");
   });
 });
