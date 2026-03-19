@@ -47,12 +47,13 @@ type RecommendationContext = {
 };
 
 const vibeValues: Vibe[] = ["Classic", "Exploratory", "Fusion", "Late Night", "Focus"];
+const strongFlavorMatchThreshold = 10;
 
 const genreToVibes: Array<{ match: RegExp; vibes: Vibe[]; subgenre: string }> = [
   { match: /fusion|jazz funk|nu jazz|broken beat|jazztronica/i, vibes: ["Fusion", "Exploratory"], subgenre: "Fusion" },
+  { match: /modal jazz|spiritual jazz/i, vibes: ["Exploratory", "Late Night"], subgenre: "Modal Jazz" },
   { match: /hard bop|bebop|post-bop/i, vibes: ["Classic", "Exploratory"], subgenre: "Hard Bop" },
   { match: /cool jazz|west coast jazz/i, vibes: ["Classic", "Focus"], subgenre: "Cool Jazz" },
-  { match: /modal jazz|spiritual jazz/i, vibes: ["Exploratory", "Late Night"], subgenre: "Modal Jazz" },
   { match: /contemporary jazz|modern jazz|jazz saxophone|indie jazz|jazz trio/i, vibes: ["Focus", "Late Night"], subgenre: "Contemporary Jazz" },
   { match: /jazz/i, vibes: ["Classic", "Late Night"], subgenre: "Jazz" }
 ];
@@ -293,6 +294,23 @@ export function diversifyPicks(picks: JazzPick[], vibe: Vibe, limit = 5) {
   return selected;
 }
 
+export function isStrongFlavorMatch(pick: JazzPick, vibe: Vibe) {
+  return scorePickForVibe(pick, vibe) >= strongFlavorMatchThreshold;
+}
+
+export function rankPicksForVibe(picks: JazzPick[], vibe: Vibe, limit = 5) {
+  const deduped = dedupePicks(picks).sort(
+    (left, right) => scorePickForVibe(right, vibe) - scorePickForVibe(left, vibe)
+  );
+  const strongMatches = deduped.filter((pick) => isStrongFlavorMatch(pick, vibe));
+
+  if (strongMatches.length >= Math.min(3, limit)) {
+    return diversifyPicks(strongMatches, vibe, limit);
+  }
+
+  return diversifyPicks(deduped, vibe, limit);
+}
+
 export function isJazzAdjacentArtist(artist: SpotifyArtistEntity) {
   const haystack = [artist.name, ...(artist.genres ?? [])].join(" ");
   return /jazz|fusion|bebop|bop|swing|blue note|improv|soul jazz/i.test(haystack);
@@ -365,47 +383,47 @@ export function buildAlbumRecommendationReason(params: {
 
   const relationshipLines: Record<RecommendationContext["relationship"], string[]> = {
     familiar: [
-      `你最近常回到 ${params.sourceArtistName}，這張會把那股熟悉感收得更完整。`,
-      `如果最近耳朵一直往 ${params.sourceArtistName} 靠，從《${params.albumTitle}》接下去會很順。`
+      `既然這陣子耳朵一直往 ${params.sourceArtistName} 靠，不如直接把《${params.albumTitle}》整張放完。`,
+      `你最近常回到 ${params.sourceArtistName}，這張剛好能把那股熟悉感留得更完整。`
     ],
     saved: [
-      `既然你留過 ${params.albumArtist} 的聲音，回到《${params.albumTitle}》會比停在片段更對味。`,
-      `你先前收下的那條線，在《${params.albumTitle}》裡會長得更完整。`
+      `你先前留下的那條線，回到《${params.albumTitle}》會比停在片段更有味道。`,
+      `既然你收過 ${params.albumArtist} 的聲音，這張很適合直接從第一首開始。`
     ],
     recent: [
-      `你最近剛碰過 ${params.albumArtist}，這張接上去幾乎不需要重新進入狀態。`,
-      `耳朵還停在 ${params.albumArtist} 的質地上時，聽《${params.albumTitle}》會很自然。`
+      `耳朵還停在 ${params.albumArtist} 的質地上時，接著聽《${params.albumTitle}》會很自然。`,
+      `你最近剛碰過 ${params.albumArtist}，這張接上去幾乎不需要重新進入狀態。`
     ],
     adjacent: [
-      `沿著 ${params.sourceArtistName} 這條線往外再走一點，《${params.albumTitle}》剛好把視野打開。`,
-      `如果想從 ${params.sourceArtistName} 再走遠半步，《${params.albumTitle}》會是一個很穩的延伸。`
+      `沿著 ${params.sourceArtistName} 這條線再走半步，《${params.albumTitle}》會把視野打開，但不會一下子拉得太遠。`,
+      `如果想從 ${params.sourceArtistName} 再往外聽一點，《${params.albumTitle}》會是一個很穩的延伸。`
     ],
     fresh: [
-      `《${params.albumTitle}》和你這一輪的聆聽方向貼得很近，今天從這裡開始剛好。`,
+      `《${params.albumTitle}》和你這一輪的聽感貼得很近，今天從這裡開始剛好。`,
       `如果今天想換一張新的起點，《${params.albumTitle}》會是很穩的一步。`
     ]
   };
 
   const sonicLines: Record<RecommendationContext["sonic"], string[]> = {
     shadowy: [
-      "夜裡把它整張放完，光線和層次會慢慢沉下來。",
-      "它的陰影和留白都夠，適合夜裡不急著往前趕的時候。"
+      "它的陰影和留白都夠，夜裡聽尤其見長。",
+      "把燈稍微壓低一點再放這張，層次會一層一層慢慢浮上來。"
     ],
     electric: [
-      "節奏和電氣感不是點到為止，而是整張都成立。",
-      "它的推力來得乾淨，從頭放到尾會比挑單段更過癮。"
+      "節奏和電氣感都帶著光澤，整張的推進很俐落。",
+      "它不是只靠幾個亮點撐場，而是從頭到尾都帶著一股帶電的推力。"
     ],
     open: [
       "它的空間感很寬，從第一首進去就能慢慢把耳朵打開。",
-      "這張留白多、呼吸感也夠，適合把聽感慢慢展開。"
+      "留白和呼吸都收得好，聽起來會比你記得的更從容。"
     ],
     steady: [
-      "它的推進感收得很穩，適合陪一段不被打斷的專注。",
-      "整張的節奏很整齊，適合讓注意力慢慢落穩。"
+      "線條乾淨，推進穩，不會把注意力硬生生扯走。",
+      "它的節奏收得很整齊，剛好能陪一段不被打斷的專注。"
     ],
     restless: [
-      "它的轉折和留白都夠，從頭聽到尾才會真的打開。",
-      "這張不急著把答案給滿，正好留了一點探索的空間。"
+      "轉折不少，但並不故作艱深，越往後聽越有層次。",
+      "它不急著把答案一次說滿，正好留了一點探索的空間。"
     ]
   };
 
@@ -415,8 +433,8 @@ export function buildAlbumRecommendationReason(params: {
       "那種經得起反覆回來的重量，在這張裡很明顯。"
     ],
     vintage: [
-      "那種帶點年代感的溫度，會讓整張更耐聽。",
-      "它身上的舊時代質地不厚重，反而讓輪廓更乾淨。"
+      "帶點年代感的溫度，會讓整張更耐聽。",
+      "它身上的舊時代質地不厚重，反而把輪廓收得更乾淨。"
     ],
     modern: [
       "聲響是新的，但收法很克制，不會把情緒說得太滿。",
@@ -493,12 +511,14 @@ export function buildAlbumRecommendationReason(params: {
     supportLines.length > 0
       ? supportLines
       : ["如果今天不想選太久，直接把整張交給它就好。"];
+  const primaryIndex = hashValue(`${params.albumId}:${params.activeVibe}:${params.sourceArtistName}`) % Math.max(leadPool.length, 1);
+  const secondaryIndex = hashValue(`${params.albumId}:${params.subgenre}:${params.albumYear}`) % Math.max(supportPool.length, 1);
   const primary =
-    leadPool[hashValue(params.albumId) % Math.max(leadPool.length, 1)] ??
+    leadPool[primaryIndex] ??
     `《${params.albumTitle}》和你最近的聆聽方向貼得很近，今天從這裡開始剛好。`;
   const secondaryPool = supportPool.filter((sentence) => sentence !== primary);
   const secondary =
-    secondaryPool[hashValue(params.albumId) % Math.max(secondaryPool.length, 1)] ??
+    secondaryPool[secondaryIndex % Math.max(secondaryPool.length, 1)] ??
     "如果今天想少選一點，直接把整張交給它就好。";
 
   return `${primary}${secondary}`;

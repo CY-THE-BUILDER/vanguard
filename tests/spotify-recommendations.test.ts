@@ -7,6 +7,7 @@ import {
   buildTrackPick,
   diversifyPicks,
   inferVibes,
+  rankPicksForVibe,
   scoreArtistForVibe,
   scorePickForVibe
 } from "@/lib/spotify-recommendations";
@@ -154,7 +155,7 @@ describe("spotify recommendation mapping", () => {
       sourceAlbumTitle: "Head Hunters"
     });
 
-    expect(reason).toContain("Herbie Hancock");
+    expect(reason).toContain("Thrust");
     expect(reason).not.toContain("數據");
     expect(reason).not.toContain("分析");
     expect(reason).not.toContain("觀察");
@@ -228,5 +229,70 @@ describe("spotify recommendation mapping", () => {
 
     expect(diversified).toHaveLength(2);
     expect(new Set(diversified.map((pick) => pick.artist)).size).toBe(2);
+  });
+
+  it("produces different shelves for different flavors from the same candidate pool", () => {
+    const candidates = [
+      buildAlbumPick(
+        {
+          id: "classic-1",
+          name: "Kind of Blue",
+          release_date: "1959-08-17",
+          images: [{ url: "https://i.scdn.co/image/kob" }],
+          external_urls: { spotify: "https://open.spotify.com/album/classic-1" },
+          artists: [{ id: "artist-miles", name: "Miles Davis" }]
+        },
+        { id: "artist-miles", name: "Miles Davis", genres: ["modal jazz", "jazz trumpet"] },
+        "Classic",
+        "search"
+      ),
+      buildAlbumPick(
+        {
+          id: "fusion-1",
+          name: "Head Hunters",
+          release_date: "1973-10-26",
+          images: [{ url: "https://i.scdn.co/image/hh" }],
+          external_urls: { spotify: "https://open.spotify.com/album/fusion-1" },
+          artists: [{ id: "artist-herbie", name: "Herbie Hancock" }]
+        },
+        { id: "artist-herbie", name: "Herbie Hancock", genres: ["jazz fusion", "jazz funk"] },
+        "Fusion",
+        "search"
+      ),
+      buildAlbumPick(
+        {
+          id: "late-1",
+          name: "Night Dreamer",
+          release_date: "1964-01-01",
+          images: [{ url: "https://i.scdn.co/image/night" }],
+          external_urls: { spotify: "https://open.spotify.com/album/late-1" },
+          artists: [{ id: "artist-wayne", name: "Wayne Shorter" }]
+        },
+        { id: "artist-wayne", name: "Wayne Shorter", genres: ["post-bop", "modal jazz"] },
+        "Late Night",
+        "search"
+      ),
+      buildAlbumPick(
+        {
+          id: "focus-1",
+          name: "Bright Size Life",
+          release_date: "1976-01-01",
+          images: [{ url: "https://i.scdn.co/image/focus" }],
+          external_urls: { spotify: "https://open.spotify.com/album/focus-1" },
+          artists: [{ id: "artist-pat", name: "Pat Metheny" }]
+        },
+        { id: "artist-pat", name: "Pat Metheny", genres: ["contemporary jazz", "jazz guitar"] },
+        "Focus",
+        "search"
+      )
+    ];
+
+    const fusionShelf = rankPicksForVibe(candidates, "Fusion", 3).map((pick) => pick.title);
+    const lateNightShelf = rankPicksForVibe(candidates, "Late Night", 3).map((pick) => pick.title);
+
+    expect(fusionShelf).not.toEqual(lateNightShelf);
+    expect(fusionShelf[0]).toBe("Head Hunters");
+    expect(lateNightShelf).toContain("Night Dreamer");
+    expect(lateNightShelf).not.toEqual(fusionShelf);
   });
 });

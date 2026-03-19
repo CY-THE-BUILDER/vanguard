@@ -11,12 +11,11 @@ import {
   buildCuratedFeed,
   buildTasteProfile,
   buildTrackPick,
-  dedupePicks,
   diversifyPicks,
+  rankPicksForVibe,
   isJazzAdjacentArtist,
   ListenerTasteProfile,
   parseVibe,
-  scorePickForVibe,
   scoreArtistForVibe,
   SpotifyAlbumEntity,
   SpotifyArtistEntity,
@@ -238,15 +237,15 @@ async function buildSearchDrivenPicks(
         return albumPicks;
       });
 
-      return picks.sort(
-        (left, right) => scorePickForVibe(right, activeVibe) - scorePickForVibe(left, activeVibe)
-      );
+      return picks;
     })
   );
 
-  return dedupePicks(searchResults.flat())
-    .filter((pick) => albumMatchesActiveFlavor(pick, activeVibe))
-    .sort((left, right) => scorePickForVibe(right, activeVibe) - scorePickForVibe(left, activeVibe));
+  return rankPicksForVibe(
+    searchResults.flat().filter((pick) => albumMatchesActiveFlavor(pick, activeVibe)),
+    activeVibe,
+    12
+  );
 }
 
 function buildSignalDrivenPicks(
@@ -264,7 +263,7 @@ function buildSignalDrivenPicks(
     ...recentlyPlayed.map((track) => ({ track, origin: "recent" as const }))
   ];
 
-  return dedupePicks(
+  return rankPicksForVibe(
     candidates
       .map(({ track, origin }) => {
         const sourceArtist =
@@ -301,9 +300,10 @@ function buildSignalDrivenPicks(
       })
       .filter((entry) => entry.allowed)
       .map((entry) => entry.pick)
-  )
-    .filter((pick) => albumMatchesActiveFlavor(pick, activeVibe))
-    .sort((left, right) => scorePickForVibe(right, activeVibe) - scorePickForVibe(left, activeVibe));
+      .filter((pick) => albumMatchesActiveFlavor(pick, activeVibe)),
+    activeVibe,
+    12
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -354,10 +354,7 @@ export async function GET(request: NextRequest) {
       savedTracks,
       tasteProfile
     );
-    const personalizedPicks = diversifyPicks(
-      dedupePicks([...searchedPicks, ...signalPicks])
-      .sort((left, right) => scorePickForVibe(right, vibe) - scorePickForVibe(left, vibe))
-      , vibe, 5);
+    const personalizedPicks = rankPicksForVibe([...searchedPicks, ...signalPicks], vibe, 5);
 
     if (personalizedPicks.length >= 3) {
       const seedNames = Array.from(
