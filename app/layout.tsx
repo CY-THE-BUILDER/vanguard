@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { getCanonicalSiteUrl } from "@/lib/site-url";
 import "./globals.css";
+
+const siteUrl = getCanonicalSiteUrl();
 
 export const metadata: Metadata = {
   title: "jazz-your-life",
   description: "A calm daily jazz companion for Spotify listeners who want to start with the right record.",
+  metadataBase: new URL(siteUrl),
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

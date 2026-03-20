@@ -4,7 +4,7 @@
 
 `jazz-your-life` 是一個為 Spotify 重度爵士樂愛好者打造的每日推薦 Web App。它會用最短的點擊路徑，先給你今天可以從哪裡開始聽；連接 Spotify 後，也會根據最近的常聽、收藏與播放紀錄，調整推薦方向。
 
-Live URL: [https://jazz-your-life.vercel.app](https://jazz-your-life.vercel.app)
+Live URL: [https://www.noesis.studio](https://www.noesis.studio)
 
 ## Product Highlights
 
@@ -41,18 +41,18 @@ Live URL: [https://jazz-your-life.vercel.app](https://jazz-your-life.vercel.app)
 
    ```text
    http://127.0.0.1:3000/api/spotify/callback
-   https://jazz-your-life.vercel.app/api/spotify/callback
+   https://www.noesis.studio/api/spotify/callback
    ```
 
 5. Fill in `SPOTIFY_CLIENT_ID` in `.env.local`.
-
-6. Start the dev server:
+6. Set `SITE_URL=https://www.noesis.studio` in `.env.local` if you want local metadata and OAuth redirects to match production.
+7. Start the dev server:
 
    ```bash
    npm run dev
    ```
 
-7. Open [http://127.0.0.1:3000](http://127.0.0.1:3000)
+8. Open [http://127.0.0.1:3000](http://127.0.0.1:3000)
 
 ## Verification
 
@@ -68,13 +68,14 @@ npm run build
 2. Import the GitHub repo into Vercel as `jazz-your-life`.
 3. Use the default Next.js build settings.
 4. Add `SPOTIFY_CLIENT_ID` to production env.
-5. Make sure Spotify Dashboard also allowlists:
+5. Add `SITE_URL=https://www.noesis.studio` to production env.
+6. Make sure Spotify Dashboard also allowlists:
 
    ```text
-   https://jazz-your-life.vercel.app/api/spotify/callback
+   https://www.noesis.studio/api/spotify/callback
    ```
 
-6. Redeploy after each push.
+7. Redeploy after each push.
 
 ## Stack
 

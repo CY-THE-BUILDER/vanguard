@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getCanonicalOrigin } from "@/lib/site-url";
 
 const ACCESS_TOKEN_COOKIE = "spotify_access_token";
 const REFRESH_TOKEN_COOKIE = "spotify_refresh_token";
@@ -52,7 +53,7 @@ export function getSpotifyRedirectUri(origin: string) {
     return process.env.SPOTIFY_REDIRECT_URI;
   }
 
-  return new URL("/api/spotify/callback", origin).toString();
+  return new URL("/api/spotify/callback", getCanonicalOrigin(origin)).toString();
 }
 
 export function buildSpotifyAuthorizeUrl(params: {
