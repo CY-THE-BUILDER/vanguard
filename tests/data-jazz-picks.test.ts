@@ -33,6 +33,7 @@ describe("curated jazz picks", () => {
       "speak-no-evil",
       "out-to-lunch",
       "head-hunters",
+      "sextant",
       "bright-size-life",
       "undercurrent",
       "waltz-for-debby",
@@ -41,6 +42,8 @@ describe("curated jazz picks", () => {
       "journey-in-satchidananda",
       "idle-moments",
       "john-coltrane-and-johnny-hartman",
+      "mysterious-traveller",
+      "you-must-believe-in-spring",
       "black-focus"
     ];
 
