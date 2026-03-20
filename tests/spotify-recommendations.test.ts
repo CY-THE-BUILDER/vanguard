@@ -86,7 +86,7 @@ describe("spotify recommendation mapping", () => {
         type: "album"
       })
     ).toBe(
-      "https://open.spotify.com/search/album%3AKind%20of%20Blue%20artist%3AMiles%20Davis"
+      "https://open.spotify.com/search/Kind%20of%20Blue%20Miles%20Davis"
     );
   });
 

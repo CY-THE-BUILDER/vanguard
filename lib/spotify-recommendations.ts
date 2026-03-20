@@ -101,7 +101,7 @@ export function buildSpotifySearchUrl(params: {
   artist: string;
   type: "track" | "album";
 }) {
-  const query = `${params.type}:${params.title} artist:${params.artist}`;
+  const query = `${params.title} ${params.artist}`.replace(/\s+/g, " ").trim();
   return `https://open.spotify.com/search/${encodeURIComponent(query)}`;
 }
 

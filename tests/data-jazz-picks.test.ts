@@ -22,6 +22,14 @@ describe("curated jazz picks", () => {
     }
   });
 
+  it("uses plain Spotify search queries for fallback urls so the search page stays resilient", () => {
+    for (const pick of jazzPicks.filter((entry) => entry.spotifyUrl.includes("/search/"))) {
+      expect(pick.spotifyUrl).not.toContain("album%3A");
+      expect(pick.spotifyUrl).not.toContain("track%3A");
+      expect(pick.spotifyUrl).not.toContain("artist%3A");
+    }
+  });
+
   it("keeps direct Spotify album links when the curated data already knows the album url", () => {
     const exactAlbumIds = [
       "kind-of-blue",
