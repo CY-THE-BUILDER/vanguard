@@ -7,12 +7,6 @@ type NoesisLandingProps = {
   locale: Locale;
 };
 
-type LandingContent = Awaited<ReturnType<typeof getLandingContent>>;
-type LandingNarrativeSection = LandingContent["narrativeSections"][number];
-type LandingProject = LandingContent["projects"][number];
-type LandingEssay = LandingContent["essays"][number];
-type LandingIcon = LandingContent["icons"][number];
-
 export async function NoesisLanding({ locale }: NoesisLandingProps) {
   const isZh = locale === "zh-Hant";
   const navigation = await getBrandNavigation(locale);
@@ -59,7 +53,7 @@ export async function NoesisLanding({ locale }: NoesisLandingProps) {
       </section>
 
       <section className="narrative-grid">
-        {content.narrativeSections.map((section: LandingNarrativeSection) => (
+        {content.narrativeSections.map((section) => (
           <article className="narrative-card" key={section.title}>
             <p className="section-eyebrow">{section.eyebrow}</p>
             <h2>{section.title}</h2>
@@ -75,7 +69,7 @@ export async function NoesisLanding({ locale }: NoesisLandingProps) {
         </div>
 
         <div className="project-grid">
-          {content.projects.map((project: LandingProject) => (
+          {content.projects.map((project) => (
             <a className="project-card" href={project.href} key={project.slug}>
               <div className="project-meta">
                 <span>{project.status === "live" ? (isZh ? "已上線" : "Live") : isZh ? "建構中" : "Building"}</span>
@@ -94,7 +88,7 @@ export async function NoesisLanding({ locale }: NoesisLandingProps) {
           <h2>{isZh ? "品牌與產品背後的思想將在這裡展開" : "The thinking behind the brand and products unfolds here"}</h2>
         </div>
         <div className="essay-list compact-essay-list">
-          {content.essays.map((essay: LandingEssay) => (
+          {content.essays.map((essay) => (
             <article className="essay-card" key={essay.slug}>
               <p className="section-eyebrow">{essay.category}</p>
               <h2>{essay.title}</h2>
@@ -126,7 +120,7 @@ Project -> Link / Tag / Release / ProjectMetric`}</code>
           </div>
           <div className="database-card">
             <ul className="principle-list">
-              {content.databasePoints.map((point: string) => (
+              {content.databasePoints.map((point) => (
                 <li key={point}>{point}</li>
               ))}
             </ul>
@@ -142,7 +136,7 @@ Project -> Link / Tag / Release / ProjectMetric`}</code>
         </div>
 
         <div className="icon-grid">
-          {content.icons.map((icon: LandingIcon) => (
+          {content.icons.map((icon) => (
             <article className="icon-card" key={icon.id}>
               <div className="icon-preview">
                 <Image
