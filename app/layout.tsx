@@ -6,14 +6,14 @@ import "./globals.css";
 const siteUrl = getCanonicalSiteUrl();
 
 export const metadata: Metadata = {
-  title: "Noesis Studio",
-  description: "A calm studio for side projects, products, and philosophical digital experiences.",
+  title: "jazz-your-life",
+  description: "A calm daily jazz companion for Spotify listeners who want to start with the right record.",
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Noesis Studio"
+    title: "jazz-your-life"
   },
   formatDetection: {
     telephone: false

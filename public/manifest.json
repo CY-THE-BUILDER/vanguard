@@ -1,12 +1,12 @@
 {
-  "name": "Noesis Studio",
-  "short_name": "Noesis",
-  "description": "A calm studio for side projects, products, and philosophical digital experiences.",
+  "name": "jazz-your-life",
+  "short_name": "jazz-your-life",
+  "description": "A calm daily jazz companion for Spotify listeners who want to start with the right record.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#11100d",
-  "theme_color": "#11100d",
-  "lang": "zh-Hant",
+  "background_color": "#09100f",
+  "theme_color": "#09100f",
+  "lang": "en",
   "icons": [
     {
       "src": "/icons/icon.svg",
