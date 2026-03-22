@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { Prisma } from "@prisma/client";
 import { adminLoginAction, adminLogoutAction, updateNavigationAction, updateProjectAction, updateSectionLocaleAction } from "@/app/admin/actions";
 import { isAdminAuthenticated, isAdminConfigured } from "@/lib/admin-auth";
 import { getPrismaClient } from "@/lib/prisma";
@@ -12,28 +11,6 @@ export const metadata: Metadata = {
     follow: false
   }
 };
-
-type NavigationItemRecord = Prisma.NavigationItemGetPayload<Record<string, never>>;
-type PageRecord = Prisma.PageGetPayload<{
-  include: {
-    sections: {
-      include: {
-        locales: true;
-      };
-    };
-  };
-}>;
-type ProjectRecord = Prisma.ProjectGetPayload<{
-  include: {
-    locales: true;
-    tags: {
-      include: {
-        tag: true;
-      };
-    };
-  };
-}>;
-const adminLocales = ["zh_Hant", "en"] as const;
 
 async function getAdminData() {
   const prisma = getPrismaClient();
@@ -171,7 +148,7 @@ export default async function AdminPage({
           <h2>Primary links</h2>
         </div>
         <div className="admin-grid">
-          {data.navigation.map((item: NavigationItemRecord) => (
+          {data.navigation.map((item) => (
             <form action={updateNavigationAction} className="admin-card" key={item.id}>
               <input name="navigationId" type="hidden" value={item.id} />
               <label className="admin-label">
@@ -195,12 +172,12 @@ export default async function AdminPage({
           <p className="section-eyebrow">Pages</p>
           <h2>Localized section editing</h2>
         </div>
-        {data.pages.map((page: PageRecord) => (
+        {data.pages.map((page) => (
           <div className="admin-page-group" key={page.id}>
             <h3>{page.slug}</h3>
             <div className="admin-grid">
-              {page.sections.flatMap((section: PageRecord["sections"][number]) =>
-                adminLocales.map((locale) => {
+              {page.sections.flatMap((section) =>
+                ["zh_Hant", "en"].map((locale) => {
                   const localized = section.locales.find((entry) => entry.locale === locale);
                   return (
                     <form action={updateSectionLocaleAction} className="admin-card" key={`${section.id}-${locale}`}>
@@ -244,8 +221,8 @@ export default async function AdminPage({
           <h2>Project copy and routing</h2>
         </div>
         <div className="admin-grid">
-          {data.projects.flatMap((project: ProjectRecord) =>
-            adminLocales.map((locale) => {
+          {data.projects.flatMap((project) =>
+            ["zh_Hant", "en"].map((locale) => {
               const localized = project.locales.find((entry) => entry.locale === locale);
               return (
                 <form action={updateProjectAction} className="admin-card" key={`${project.id}-${locale}`}>
