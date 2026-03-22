@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import type { MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
+import { VinylSpinner } from "@/components/vinyl-spinner";
+import { buildGeneratedCoverArt } from "@/lib/cover-art";
 import { getSpotifyActionUrl, getSpotifyNavigationTarget } from "@/lib/spotify-actions";
 import { JazzPick } from "@/types/jazz";
 
@@ -10,15 +12,27 @@ type RecommendationCardProps = {
   isSaved: boolean;
   onToggleSave: (pick: JazzPick) => void;
   onShare: (pick: JazzPick) => void;
+  prioritizeImage?: boolean;
 };
 
 export function RecommendationCard({
   pick,
   isSaved,
   onToggleSave,
-  onShare
+  onShare,
+  prioritizeImage = false
 }: RecommendationCardProps) {
   const spotifyHref = getSpotifyActionUrl(pick);
+  const placeholderImage = pick.placeholderImageUrl || buildGeneratedCoverArt(pick.title, pick.artist, pick.accentColor);
+  const [imageSrc, setImageSrc] = useState(
+    pick.imageUrl || placeholderImage
+  );
+  const [isImageLoading, setIsImageLoading] = useState(true);
+
+  useEffect(() => {
+    setImageSrc(pick.imageUrl || placeholderImage);
+    setIsImageLoading(true);
+  }, [pick.imageUrl, placeholderImage]);
 
   function handleOpenSpotify(event: MouseEvent<HTMLAnchorElement>) {
     const actionUrl = getSpotifyActionUrl(pick, navigator.userAgent);
@@ -32,15 +46,42 @@ export function RecommendationCard({
 
   return (
     <article className="group overflow-hidden rounded-[28px] border border-white/10 bg-card/90 shadow-panel backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-white/20">
-      <div className="relative aspect-square overflow-hidden">
+      <div
+        className="relative aspect-square overflow-hidden"
+        style={{
+          backgroundImage: `url("${placeholderImage}")`,
+          backgroundPosition: "center",
+          backgroundSize: "cover"
+        }}
+      >
         <Image
-          src={pick.imageUrl}
+          src={imageSrc}
           alt={`${pick.title} by ${pick.artist}`}
           fill
           unoptimized
+          priority={prioritizeImage}
+          loading={prioritizeImage ? "eager" : "lazy"}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+          className={`object-cover transition duration-500 group-hover:scale-[1.03] ${
+            isImageLoading ? "opacity-0" : "opacity-100"
+          }`}
+          onLoad={() => {
+            setIsImageLoading(false);
+          }}
+          onError={() => {
+            setImageSrc(placeholderImage);
+          }}
         />
+        <div
+          className={`absolute inset-0 flex items-center justify-center bg-[#0b1110]/55 backdrop-blur-[2px] transition duration-300 ${
+            isImageLoading ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
+        >
+          <div className="flex flex-col items-center gap-3 text-center">
+            <VinylSpinner size="lg" />
+            <p className="text-xs uppercase tracking-[0.24em] text-mist/80">唱盤就位中</p>
+          </div>
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
       </div>
 

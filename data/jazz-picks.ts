@@ -1,5 +1,6 @@
 import { JazzPick } from "@/types/jazz";
 import { buildSpotifySearchUrl } from "@/lib/spotify-recommendations";
+import { buildGeneratedCoverArt } from "@/lib/cover-art";
 
 function createCoverArt(
   title: string,
@@ -30,10 +31,12 @@ function createCoverArt(
 
 function withCover(pick: Omit<JazzPick, "imageUrl">, palette: Parameters<typeof createCoverArt>[2]): JazzPick {
   const artworkSourceUrl = pick.artworkSourceUrl ?? pick.spotifyUrl;
+  const placeholderImageUrl = buildGeneratedCoverArt(pick.title, pick.artist, pick.accentColor);
 
   return {
     ...pick,
     imageUrl: createCoverArt(pick.title, pick.artist, palette),
+    placeholderImageUrl,
     artworkSourceUrl,
     spotifyUrl:
       /open\.spotify\.com\/album\//.test(pick.spotifyUrl)
@@ -165,6 +168,78 @@ export const jazzPicks: JazzPick[] = [
   ),
   withCover(
     {
+      id: "a-love-supreme",
+      title: "A Love Supreme",
+      artist: "John Coltrane",
+      type: "album",
+      subgenre: "Spiritual Jazz",
+      vibeTags: ["Classic", "Exploratory", "Focus"],
+      recommendationReason: "像把心緒慢慢收成一道更高的線，越往後聽，重心越穩。",
+      spotifyUrl: "https://open.spotify.com/search/A%20Love%20Supreme%20John%20Coltrane",
+      shareUrl: "https://open.spotify.com/search/A%20Love%20Supreme%20John%20Coltrane",
+      year: 1965,
+      durationLabel: "33 min",
+      accentColor: "#b49763",
+      source: "curated"
+    },
+    { bg: "#17130f", glow: "#57432e", accent: "#cfaa67", text: "#f5ecdf" }
+  ),
+  withCover(
+    {
+      id: "mingus-ah-um",
+      title: "Mingus Ah Um",
+      artist: "Charles Mingus",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Classic", "Exploratory"],
+      recommendationReason: "粗礪與幽默都在裡面，放下去就知道這張名盤為什麼總有人回頭。",
+      spotifyUrl: "https://open.spotify.com/search/Mingus%20Ah%20Um%20Charles%20Mingus",
+      shareUrl: "https://open.spotify.com/search/Mingus%20Ah%20Um%20Charles%20Mingus",
+      year: 1959,
+      durationLabel: "38 min",
+      accentColor: "#a97455",
+      source: "curated"
+    },
+    { bg: "#18110e", glow: "#533027", accent: "#c7865d", text: "#f5e8dd" }
+  ),
+  withCover(
+    {
+      id: "the-sidewinder",
+      title: "The Sidewinder",
+      artist: "Lee Morgan",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Classic", "Focus"],
+      recommendationReason: "銅管明亮，步伐俐落，適合把一天的狀態迅速拉回正軌。",
+      spotifyUrl: "https://open.spotify.com/search/The%20Sidewinder%20Lee%20Morgan",
+      shareUrl: "https://open.spotify.com/search/The%20Sidewinder%20Lee%20Morgan",
+      year: 1964,
+      durationLabel: "37 min",
+      accentColor: "#c18152",
+      source: "curated"
+    },
+    { bg: "#18110d", glow: "#593224", accent: "#d68c58", text: "#f5e9df" }
+  ),
+  withCover(
+    {
+      id: "getz-gilberto",
+      title: "Getz/Gilberto",
+      artist: "Stan Getz & Joao Gilberto",
+      type: "album",
+      subgenre: "Cool Jazz",
+      vibeTags: ["Classic", "Late Night", "Focus"],
+      recommendationReason: "線條鬆，氣味輕，像把窗打開一點，讓夜裡的空氣自己進來。",
+      spotifyUrl: "https://open.spotify.com/search/Getz%20Gilberto%20Stan%20Getz%20Joao%20Gilberto",
+      shareUrl: "https://open.spotify.com/search/Getz%20Gilberto%20Stan%20Getz%20Joao%20Gilberto",
+      year: 1964,
+      durationLabel: "35 min",
+      accentColor: "#96aaa4",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#355056", accent: "#aac2ba", text: "#eef5f1" }
+  ),
+  withCover(
+    {
       id: "night-dreamer",
       title: "Night Dreamer",
       artist: "Wayne Shorter",
@@ -219,6 +294,78 @@ export const jazzPicks: JazzPick[] = [
   ),
   withCover(
     {
+      id: "point-of-departure",
+      title: "Point of Departure",
+      artist: "Andrew Hill",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory"],
+      recommendationReason: "每個轉折都像在重新定義重心，適合耳朵還想再往外走一點的時候。",
+      spotifyUrl: "https://open.spotify.com/search/Point%20of%20Departure%20Andrew%20Hill",
+      shareUrl: "https://open.spotify.com/search/Point%20of%20Departure%20Andrew%20Hill",
+      year: 1965,
+      durationLabel: "40 min",
+      accentColor: "#a88a6d",
+      source: "curated"
+    },
+    { bg: "#151210", glow: "#46372d", accent: "#bc9a76", text: "#f4ece2" }
+  ),
+  withCover(
+    {
+      id: "the-black-saint-and-the-sinner-lady",
+      title: "The Black Saint and the Sinner Lady",
+      artist: "Charles Mingus",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory", "Late Night"],
+      recommendationReason: "敘事感很強，情緒一層一層推進，像一段帶著陰影的長鏡頭。",
+      spotifyUrl: "https://open.spotify.com/search/The%20Black%20Saint%20and%20the%20Sinner%20Lady%20Charles%20Mingus",
+      shareUrl: "https://open.spotify.com/search/The%20Black%20Saint%20and%20the%20Sinner%20Lady%20Charles%20Mingus",
+      year: 1963,
+      durationLabel: "39 min",
+      accentColor: "#9b7f67",
+      source: "curated"
+    },
+    { bg: "#15110f", glow: "#48322b", accent: "#b19070", text: "#f4ebe2" }
+  ),
+  withCover(
+    {
+      id: "karma",
+      title: "Karma",
+      artist: "Pharoah Sanders",
+      type: "album",
+      subgenre: "Spiritual Jazz",
+      vibeTags: ["Exploratory", "Late Night"],
+      recommendationReason: "不是要把房間填滿，而是把空間撐開，讓整個聆聽慢慢失重。",
+      spotifyUrl: "https://open.spotify.com/search/Karma%20Pharoah%20Sanders",
+      shareUrl: "https://open.spotify.com/search/Karma%20Pharoah%20Sanders",
+      year: 1969,
+      durationLabel: "32 min",
+      accentColor: "#a68b61",
+      source: "curated"
+    },
+    { bg: "#15120f", glow: "#473b2a", accent: "#bf9e67", text: "#f4ecdf" }
+  ),
+  withCover(
+    {
+      id: "conference-of-the-birds",
+      title: "Conference of the Birds",
+      artist: "Dave Holland",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory", "Focus"],
+      recommendationReason: "線條彼此牽引卻不互相擠壓，適合需要清醒又不想太平直的時候。",
+      spotifyUrl: "https://open.spotify.com/search/Conference%20of%20the%20Birds%20Dave%20Holland",
+      shareUrl: "https://open.spotify.com/search/Conference%20of%20the%20Birds%20Dave%20Holland",
+      year: 1973,
+      durationLabel: "44 min",
+      accentColor: "#7e938c",
+      source: "curated"
+    },
+    { bg: "#121615", glow: "#324744", accent: "#94aca3", text: "#edf4ef" }
+  ),
+  withCover(
+    {
       id: "head-hunters",
       title: "Head Hunters",
       artist: "Herbie Hancock",
@@ -270,6 +417,78 @@ export const jazzPicks: JazzPick[] = [
       source: "curated"
     },
     { bg: "#0d1820", glow: "#234759", accent: "#e1be63", text: "#eef5f4" }
+  ),
+  withCover(
+    {
+      id: "bitches-brew",
+      title: "Bitches Brew",
+      artist: "Miles Davis",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion", "Exploratory", "Late Night"],
+      recommendationReason: "不是平順地往前，而是讓節奏和電流在你腳邊慢慢積起來。",
+      spotifyUrl: "https://open.spotify.com/search/Bitches%20Brew%20Miles%20Davis",
+      shareUrl: "https://open.spotify.com/search/Bitches%20Brew%20Miles%20Davis",
+      year: 1970,
+      durationLabel: "94 min",
+      accentColor: "#a07a63",
+      source: "curated"
+    },
+    { bg: "#171110", glow: "#47302e", accent: "#b58a71", text: "#f3e9e0" }
+  ),
+  withCover(
+    {
+      id: "thrust",
+      title: "Thrust",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion", "Focus"],
+      recommendationReason: "低頻往前推得很穩，整張帶著一種乾淨俐落的速度感。",
+      spotifyUrl: "https://open.spotify.com/search/Thrust%20Herbie%20Hancock",
+      shareUrl: "https://open.spotify.com/search/Thrust%20Herbie%20Hancock",
+      year: 1974,
+      durationLabel: "38 min",
+      accentColor: "#b67c56",
+      source: "curated"
+    },
+    { bg: "#16110f", glow: "#4a2d27", accent: "#cd8d62", text: "#f4ebe2" }
+  ),
+  withCover(
+    {
+      id: "light-as-a-feather",
+      title: "Light as a Feather",
+      artist: "Return to Forever",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion", "Exploratory"],
+      recommendationReason: "輕盈和推進力並不互斥，這張就把兩者貼得很近。",
+      spotifyUrl: "https://open.spotify.com/search/Light%20as%20a%20Feather%20Return%20to%20Forever",
+      shareUrl: "https://open.spotify.com/search/Light%20as%20a%20Feather%20Return%20to%20Forever",
+      year: 1973,
+      durationLabel: "47 min",
+      accentColor: "#b8a56a",
+      source: "curated"
+    },
+    { bg: "#17150e", glow: "#4c4422", accent: "#ceb66e", text: "#f5efdc" }
+  ),
+  withCover(
+    {
+      id: "romantic-warrior",
+      title: "Romantic Warrior",
+      artist: "Return to Forever",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion", "Exploratory"],
+      recommendationReason: "輪廓很亮，速度感也很足，適合想把耳朵徹底喚醒的時候。",
+      spotifyUrl: "https://open.spotify.com/search/Romantic%20Warrior%20Return%20to%20Forever",
+      shareUrl: "https://open.spotify.com/search/Romantic%20Warrior%20Return%20to%20Forever",
+      year: 1976,
+      durationLabel: "44 min",
+      accentColor: "#9a8474",
+      source: "curated"
+    },
+    { bg: "#161211", glow: "#433633", accent: "#b69a86", text: "#f3ece5" }
   ),
   withCover(
     {
@@ -579,6 +798,132 @@ export const jazzPicks: JazzPick[] = [
   ),
   withCover(
     {
+      id: "ballads",
+      title: "Ballads",
+      artist: "John Coltrane Quartet",
+      type: "album",
+      subgenre: "Jazz",
+      vibeTags: ["Late Night", "Classic"],
+      recommendationReason: "不是把情緒唱滿，而是把溫度留在每一次停頓裡。",
+      spotifyUrl: "https://open.spotify.com/search/Ballads%20John%20Coltrane%20Quartet",
+      shareUrl: "https://open.spotify.com/search/Ballads%20John%20Coltrane%20Quartet",
+      year: 1963,
+      durationLabel: "33 min",
+      accentColor: "#9a8d7b",
+      source: "curated"
+    },
+    { bg: "#161412", glow: "#433933", accent: "#b09f87", text: "#f4ece3" }
+  ),
+  withCover(
+    {
+      id: "moon-beams",
+      title: "Moon Beams",
+      artist: "Bill Evans Trio",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Late Night", "Focus"],
+      recommendationReason: "輕，卻不薄；慢，卻沒有鬆掉，很適合把夜裡的步伐放低。",
+      spotifyUrl: "https://open.spotify.com/search/Moon%20Beams%20Bill%20Evans%20Trio",
+      shareUrl: "https://open.spotify.com/search/Moon%20Beams%20Bill%20Evans%20Trio",
+      year: 1962,
+      durationLabel: "38 min",
+      accentColor: "#96a08e",
+      source: "curated"
+    },
+    { bg: "#141513", glow: "#40443d", accent: "#acb7a2", text: "#f1eee6" }
+  ),
+  withCover(
+    {
+      id: "night-lights",
+      title: "Night Lights",
+      artist: "Gerry Mulligan",
+      type: "album",
+      subgenre: "Cool Jazz",
+      vibeTags: ["Late Night", "Focus"],
+      recommendationReason: "像街角燈光映在窗上的那種亮度，整張都很近，也很耐聽。",
+      spotifyUrl: "https://open.spotify.com/search/Night%20Lights%20Gerry%20Mulligan",
+      shareUrl: "https://open.spotify.com/search/Night%20Lights%20Gerry%20Mulligan",
+      year: 1963,
+      durationLabel: "36 min",
+      accentColor: "#7f9299",
+      source: "curated"
+    },
+    { bg: "#111418", glow: "#2b3e48", accent: "#95acb3", text: "#ecf2f4" }
+  ),
+  withCover(
+    {
+      id: "beyond-the-missouri-sky",
+      title: "Beyond the Missouri Sky",
+      artist: "Charlie Haden & Pat Metheny",
+      type: "album",
+      subgenre: "Contemporary Jazz",
+      vibeTags: ["Late Night", "Focus"],
+      recommendationReason: "幾乎不需要太多動作，就能把整個空間拉得很遠很安靜。",
+      spotifyUrl: "https://open.spotify.com/search/Beyond%20the%20Missouri%20Sky%20Charlie%20Haden%20Pat%20Metheny",
+      shareUrl: "https://open.spotify.com/search/Beyond%20the%20Missouri%20Sky%20Charlie%20Haden%20Pat%20Metheny",
+      year: 1997,
+      durationLabel: "56 min",
+      accentColor: "#8ca0a0",
+      source: "curated"
+    },
+    { bg: "#111515", glow: "#304444", accent: "#9eb3b1", text: "#edf3f0" }
+  ),
+  withCover(
+    {
+      id: "the-awakening",
+      title: "The Awakening",
+      artist: "Ahmad Jamal Trio",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Focus", "Classic"],
+      recommendationReason: "節奏和留白都拿捏得很準，放下去就能把注意力慢慢扶正。",
+      spotifyUrl: "https://open.spotify.com/search/The%20Awakening%20Ahmad%20Jamal%20Trio",
+      shareUrl: "https://open.spotify.com/search/The%20Awakening%20Ahmad%20Jamal%20Trio",
+      year: 1970,
+      durationLabel: "35 min",
+      accentColor: "#92a08f",
+      source: "curated"
+    },
+    { bg: "#131513", glow: "#3a443b", accent: "#a8b6a1", text: "#eff1e9" }
+  ),
+  withCover(
+    {
+      id: "alone-together",
+      title: "Alone Together",
+      artist: "Jim Hall & Ron Carter",
+      type: "album",
+      subgenre: "Jazz",
+      vibeTags: ["Focus", "Late Night"],
+      recommendationReason: "吉他和低音彼此留出空間，卻始終走在同一條線上，很適合長時間放著。",
+      spotifyUrl: "https://open.spotify.com/search/Alone%20Together%20Jim%20Hall%20Ron%20Carter",
+      shareUrl: "https://open.spotify.com/search/Alone%20Together%20Jim%20Hall%20Ron%20Carter",
+      year: 1972,
+      durationLabel: "41 min",
+      accentColor: "#8ca095",
+      source: "curated"
+    },
+    { bg: "#121513", glow: "#33433d", accent: "#9db3a6", text: "#edf2eb" }
+  ),
+  withCover(
+    {
+      id: "crescent",
+      title: "Crescent",
+      artist: "John Coltrane Quartet",
+      type: "album",
+      subgenre: "Modal Jazz",
+      vibeTags: ["Focus", "Late Night", "Exploratory"],
+      recommendationReason: "不是直接把張力推滿，而是讓它在暗處緩緩發亮。",
+      spotifyUrl: "https://open.spotify.com/search/Crescent%20John%20Coltrane%20Quartet",
+      shareUrl: "https://open.spotify.com/search/Crescent%20John%20Coltrane%20Quartet",
+      year: 1964,
+      durationLabel: "40 min",
+      accentColor: "#8f9586",
+      source: "curated"
+    },
+    { bg: "#141512", glow: "#3c4237", accent: "#a7ae98", text: "#f1efe5" }
+  ),
+  withCover(
+    {
       id: "you-must-believe-in-spring",
       title: "You Must Believe in Spring",
       artist: "Bill Evans",
@@ -607,7 +952,14 @@ const curatedPickIdsByVibe = {
     "moanin",
     "maiden-voyage",
     "chet-baker-sings",
-    "john-coltrane-and-johnny-hartman"
+    "john-coltrane-and-johnny-hartman",
+    "a-love-supreme",
+    "mingus-ah-um",
+    "the-sidewinder",
+    "getz-gilberto",
+    "saxophone-colossus",
+    "the-awakening",
+    "ballads"
   ],
   Exploratory: [
     "out-to-lunch",
@@ -617,7 +969,17 @@ const curatedPickIdsByVibe = {
     "the-epic",
     "extensions",
     "yellow",
-    "maiden-voyage"
+    "maiden-voyage",
+    "a-love-supreme",
+    "point-of-departure",
+    "the-black-saint-and-the-sinner-lady",
+    "karma",
+    "conference-of-the-birds",
+    "crescent",
+    "light-as-a-feather",
+    "romantic-warrior",
+    "bitches-brew",
+    "mingus-ah-um"
   ],
   Fusion: [
     "head-hunters",
@@ -627,7 +989,12 @@ const curatedPickIdsByVibe = {
     "electric-byrd",
     "black-focus",
     "black-radio",
-    "yellow"
+    "yellow",
+    "bitches-brew",
+    "thrust",
+    "light-as-a-feather",
+    "romantic-warrior",
+    "source"
   ],
   "Late Night": [
     "undercurrent",
@@ -637,7 +1004,15 @@ const curatedPickIdsByVibe = {
     "you-must-believe-in-spring",
     "waltz-for-debby",
     "journey-in-satchidananda",
-    "night-dreamer"
+    "night-dreamer",
+    "getz-gilberto",
+    "ballads",
+    "moon-beams",
+    "night-lights",
+    "beyond-the-missouri-sky",
+    "the-black-saint-and-the-sinner-lady",
+    "karma",
+    "crescent"
   ],
   Focus: [
     "time-out",
@@ -648,9 +1023,46 @@ const curatedPickIdsByVibe = {
     "undercurrent",
     "idle-moments",
     "extensions",
-    "you-must-believe-in-spring"
+    "you-must-believe-in-spring",
+    "a-love-supreme",
+    "the-sidewinder",
+    "conference-of-the-birds",
+    "the-awakening",
+    "alone-together",
+    "crescent",
+    "getz-gilberto",
+    "moon-beams",
+    "beyond-the-missouri-sky"
   ]
 } satisfies Record<JazzPick["vibeTags"][number], string[]>;
+
+function hashSeed(value: string) {
+  return [...value].reduce((sum, char) => sum * 31 + char.charCodeAt(0), 7);
+}
+
+function createSeededRandom(seed: number) {
+  let state = seed || 1;
+  return () => {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
+
+function seededShuffle<T>(items: T[], seed: number) {
+  if (items.length <= 1) {
+    return items;
+  }
+
+  const random = createSeededRandom(hashSeed(String(seed)));
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
 
 function rotatePicks<T>(picks: T[], rotation: number) {
   if (picks.length <= 1 || rotation === 0) {
@@ -667,7 +1079,7 @@ function rotatePicks<T>(picks: T[], rotation: number) {
 
 export function getCuratedPicksForVibe(
   vibe: JazzPick["vibeTags"][number],
-  options?: { limit?: number; excludeIds?: Set<string>; rotation?: number }
+  options?: { limit?: number; excludeIds?: Set<string>; rotation?: number; seed?: number }
 ) {
   const ids = curatedPickIdsByVibe[vibe];
   const pickMap = new Map(jazzPicks.map((pick) => [pick.id, pick]));
@@ -675,14 +1087,15 @@ export function getCuratedPicksForVibe(
     .map((id) => pickMap.get(id))
     .filter((pick): pick is JazzPick => Boolean(pick));
   const excludedIds = options?.excludeIds ?? new Set<string>();
-  const fresh = rotatePicks(
+  const seed = options?.seed ?? 0;
+  const fresh = seededShuffle(
     pool.filter((pick) => !excludedIds.has(pick.id)),
-    options?.rotation ?? 0
+    seed + (options?.rotation ?? 0)
   );
-  const fallback = rotatePicks(
+  const fallback = seededShuffle(
     pool.filter((pick) => excludedIds.has(pick.id)),
-    options?.rotation ?? 0
+    seed + (options?.rotation ?? 0) + 97
   );
 
-  return [...fresh, ...fallback].slice(0, options?.limit ?? 5);
+  return rotatePicks([...fresh, ...fallback], options?.rotation ?? 0).slice(0, options?.limit ?? 5);
 }

@@ -6,10 +6,12 @@ import { RecommendationCard } from "@/components/recommendation-card";
 import { SavedPicks } from "@/components/saved-picks";
 import { ShareSheet } from "@/components/share-sheet";
 import { Toasts } from "@/components/toast";
+import { VinylSpinner } from "@/components/vinyl-spinner";
 import { VibeFilter } from "@/components/vibe-filter";
 import { getCuratedPicksForVibe } from "@/data/jazz-picks";
 import { getSavedPicks, savePicks } from "@/lib/jazz-storage";
 import {
+  createRecommendationSessionSeed,
   getRecommendationRotation,
   getRecentRecommendationIds,
   rememberRecommendationIds
@@ -32,8 +34,10 @@ import {
 } from "@/types/jazz";
 
 const defaultVibe: Vibe = "Classic";
+const initialVisiblePicks = 3;
+const fullVisiblePicks = 5;
 
-function buildFallbackFeedMap(savedIds: Set<string>) {
+function buildFallbackFeedMap(savedIds: Set<string>, seed = 0, limit = initialVisiblePicks) {
   return Object.fromEntries(
     vibeOptions.map((vibe) => {
       const excludeIds = new Set([...savedIds, ...getRecentRecommendationIds(vibe)]);
@@ -45,7 +49,9 @@ function buildFallbackFeedMap(savedIds: Set<string>) {
           vibe,
           getCuratedPicksForVibe(vibe, {
             excludeIds,
-            rotation
+            rotation,
+            seed,
+            limit
           })
         )
       ];
@@ -53,11 +59,13 @@ function buildFallbackFeedMap(savedIds: Set<string>) {
   ) as Record<Vibe, RecommendationFeed>;
 }
 
-function buildRecommendationRequest(savedIds: Set<string>, vibe: Vibe): RecommendationBatchRequest {
+function buildRecommendationRequest(savedIds: Set<string>, vibe: Vibe, seed: number, limit: number): RecommendationBatchRequest {
   return {
     vibe,
     excludeIds: Array.from(new Set([...savedIds, ...getRecentRecommendationIds(vibe)])),
-    rotation: getRecommendationRotation(vibe)
+    rotation: getRecommendationRotation(vibe),
+    seed,
+    limit
   };
 }
 
@@ -76,11 +84,14 @@ export function JazzApp() {
     buildFallbackFeedMap(new Set<string>())
   );
   const [hydratedVibes, setHydratedVibes] = useState<Partial<Record<Vibe, true>>>({});
+  const [expandedVibes, setExpandedVibes] = useState<Partial<Record<Vibe, true>>>({});
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
+  const [sessionSeed, setSessionSeed] = useState(0);
   const viewedVibesRef = useRef<Set<Vibe>>(new Set());
 
   useEffect(() => {
     setSavedPicks(getSavedPicks());
+    setSessionSeed(createRecommendationSessionSeed());
     setIsReady(true);
   }, []);
 
@@ -155,11 +166,12 @@ export function JazzApp() {
       return;
     }
 
-    setFeedByVibe(buildFallbackFeedMap(savedIds));
+    setFeedByVibe(buildFallbackFeedMap(savedIds, sessionSeed, initialVisiblePicks));
     setHydratedVibes({});
+    setExpandedVibes({});
     viewedVibesRef.current = new Set();
     setIsLoadingFeed(false);
-  }, [isReady, spotifySession.connected, savedIds]);
+  }, [isReady, sessionSeed, spotifySession.connected, savedIds]);
 
   useEffect(() => {
     if (!isReady || viewedVibesRef.current.has(activeVibe)) {
@@ -190,11 +202,13 @@ export function JazzApp() {
       if (spotifySession.connected) {
         setIsLoadingFeed(true);
       }
-      const request = buildRecommendationRequest(savedIds, activeVibe);
+      const request = buildRecommendationRequest(savedIds, activeVibe, sessionSeed, initialVisiblePicks);
       const query = new URLSearchParams({
         vibe: request.vibe,
         exclude: request.excludeIds.join(","),
-        rotation: String(request.rotation)
+        rotation: String(request.rotation),
+        seed: String(request.seed ?? 0),
+        limit: String(request.limit ?? initialVisiblePicks)
       });
 
       try {
@@ -235,7 +249,61 @@ export function JazzApp() {
       ignore = true;
       controller.abort();
     };
-  }, [activeVibe, hydratedVibes, isReady, savedIds, spotifySession.connected]);
+  }, [activeVibe, hydratedVibes, isReady, savedIds, sessionSeed, spotifySession.connected]);
+
+  useEffect(() => {
+    let ignore = false;
+    const controller = new AbortController();
+
+    if (!isReady || !hydratedVibes[activeVibe] || expandedVibes[activeVibe]) {
+      return;
+    }
+
+    async function expandActiveVibeFeed() {
+      const request = buildRecommendationRequest(savedIds, activeVibe, sessionSeed, fullVisiblePicks);
+      const query = new URLSearchParams({
+        vibe: request.vibe,
+        exclude: request.excludeIds.join(","),
+        rotation: String(request.rotation),
+        seed: String(request.seed ?? 0),
+        limit: String(request.limit ?? fullVisiblePicks)
+      });
+
+      try {
+        const response = await fetch(`/api/jazz/recommendations?${query.toString()}`, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to expand recommendations.");
+        }
+
+        const nextFeed = (await response.json()) as RecommendationFeed;
+        if (!ignore) {
+          setFeedByVibe((current) => ({
+            ...current,
+            [activeVibe]: nextFeed
+          }));
+          setExpandedVibes((current) => ({
+            ...current,
+            [activeVibe]: true
+          }));
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    void expandActiveVibeFeed();
+
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [activeVibe, expandedVibes, hydratedVibes, isReady, savedIds, sessionSeed]);
 
   useEffect(() => {
     let cancelled = false;
@@ -252,7 +320,7 @@ export function JazzApp() {
     }
 
     const runPrefetch = async () => {
-      const requests = pendingVibes.map((vibe) => buildRecommendationRequest(savedIds, vibe));
+      const requests = pendingVibes.map((vibe) => buildRecommendationRequest(savedIds, vibe, sessionSeed, initialVisiblePicks));
 
       try {
         const response = await fetch("/api/jazz/recommendations", {
@@ -303,7 +371,7 @@ export function JazzApp() {
         clearTimeout(timeoutId);
       }
     };
-  }, [activeVibe, hydratedVibes, isReady, savedIds, spotifySession.connected]);
+  }, [activeVibe, hydratedVibes, isReady, savedIds, sessionSeed, spotifySession.connected]);
 
   function handleToggleSave(pick: JazzPick) {
     setSavedPicks((current) => {
@@ -414,7 +482,10 @@ export function JazzApp() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.22em] text-mist/80">Spotify</p>
                     {isLoadingSpotify ? (
-                      <p className="mt-2 text-sm text-mist">正在確認連線狀態...</p>
+                      <div className="mt-3 flex items-center gap-3 text-sm text-mist">
+                        <VinylSpinner size="sm" />
+                        <span>正在確認連線狀態...</span>
+                      </div>
                     ) : spotifySession.connected ? (
                       <>
                         <p className="mt-2 text-lg text-cream">
@@ -501,19 +572,23 @@ export function JazzApp() {
                   {feed.mode === "personalized" ? "依你的聆聽習慣" : "編選起點"}
                 </p>
                 {isLoadingFeed ? (
-                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-mist/70">整理中...</p>
+                  <div className="mt-2 inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-mist/70">
+                    <VinylSpinner size="sm" />
+                    <span>唱盤轉進中</span>
+                  </div>
                 ) : null}
               </div>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-              {feed.picks.map((pick) => (
+              {feed.picks.map((pick, index) => (
                 <RecommendationCard
                   key={pick.id}
                   pick={pick}
                   isSaved={savedIds.has(pick.id)}
                   onToggleSave={handleToggleSave}
                   onShare={handleShare}
+                  prioritizeImage={index < initialVisiblePicks}
                 />
               ))}
             </div>

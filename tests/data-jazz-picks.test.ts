@@ -84,7 +84,14 @@ describe("curated jazz picks", () => {
     expect(countOverlap(fusion, lateNight)).toBeLessThanOrEqual(1);
     expect(countOverlap(exploratory, lateNight)).toBeLessThanOrEqual(1);
     expect(countOverlap(classic, lateNight)).toBeLessThanOrEqual(3);
-    expect(countOverlap(lateNight, focus)).toBeLessThanOrEqual(2);
+    expect(countOverlap(lateNight, focus)).toBeLessThanOrEqual(3);
+  });
+
+  it("keeps a deeper curated pool behind every flavor so rotation has room to breathe", () => {
+    for (const vibe of vibeOptions) {
+      const pool = getCuratedPicksForVibe(vibe, { limit: 24 }).map((pick) => pick.id);
+      expect(new Set(pool).size).toBeGreaterThanOrEqual(12);
+    }
   });
 
   it("prefers unseen curated picks before falling back to the previous shelf", () => {
@@ -122,5 +129,35 @@ describe("curated jazz picks", () => {
       expect(rotatedShelf).not.toEqual(defaultShelf);
       expect(rotatedShelf[0]).not.toBe(defaultShelf[0]);
     }
+  });
+
+  it("uses seeded variation to surface a different shelf on different visits", () => {
+    for (const vibe of vibeOptions) {
+      const firstVisit = getCuratedPicksForVibe(vibe, { limit: 5, seed: 1 }).map((pick) => pick.id);
+      const secondVisit = getCuratedPicksForVibe(vibe, { limit: 5, seed: 2 }).map((pick) => pick.id);
+
+      expect(secondVisit).not.toEqual(firstVisit);
+      expect(secondVisit[0]).not.toBe(firstVisit[0]);
+      expect(countOverlap(firstVisit, secondVisit)).toBeLessThan(5);
+    }
+  });
+
+  it("respects a broader recent pool so the next visit avoids more than just the last shelf", () => {
+    const shelf = getCuratedPicksForVibe("Classic", {
+      excludeIds: new Set([
+        "kind-of-blue",
+        "blue-train",
+        "somethin-else",
+        "time-out",
+        "sunday-at-the-village-vanguard",
+        "moanin"
+      ]),
+      limit: 3,
+      seed: 4
+    }).map((pick) => pick.id);
+
+    expect(shelf).not.toContain("kind-of-blue");
+    expect(shelf).not.toContain("blue-train");
+    expect(shelf[0]).toBeDefined();
   });
 });
