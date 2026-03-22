@@ -77,8 +77,6 @@ type AdminData = NonNullable<Awaited<ReturnType<typeof getAdminData>>>;
 type NavigationItemRecord = AdminData["navigation"][number];
 type PageRecord = AdminData["pages"][number];
 type ProjectRecord = AdminData["projects"][number];
-type SectionLocaleRecord = PageRecord["sections"][number]["locales"][number];
-type ProjectLocaleRecord = ProjectRecord["locales"][number];
 
 export default async function AdminPage({
   searchParams
@@ -186,7 +184,7 @@ export default async function AdminPage({
             <div className="admin-grid">
               {page.sections.flatMap((section: PageRecord["sections"][number]) =>
                 adminLocales.map((locale) => {
-                  const localized = section.locales.find((entry: SectionLocaleRecord) => entry.locale === locale);
+                  const localized = section.locales.find((entry) => entry.locale === locale);
                   return (
                     <form action={updateSectionLocaleAction} className="admin-card" key={`${section.id}-${locale}`}>
                       <input name="sectionId" type="hidden" value={section.id} />
@@ -231,7 +229,7 @@ export default async function AdminPage({
         <div className="admin-grid">
           {data.projects.flatMap((project: ProjectRecord) =>
             adminLocales.map((locale) => {
-              const localized = project.locales.find((entry: ProjectLocaleRecord) => entry.locale === locale);
+              const localized = project.locales.find((entry) => entry.locale === locale);
               return (
                 <form action={updateProjectAction} className="admin-card" key={`${project.id}-${locale}`}>
                   <input name="projectId" type="hidden" value={project.id} />
