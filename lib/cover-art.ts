@@ -20,6 +20,33 @@ type ItunesResponse = {
 
 const publicArtworkHydrationCache = new Map<string, Promise<JazzPick>>();
 
+export function buildGeneratedCoverArt(
+  title: string,
+  artist: string,
+  accentColor = "#c8a46c"
+) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="${title} by ${artist}">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#101916" />
+          <stop offset="100%" stop-color="#21423f" />
+        </linearGradient>
+      </defs>
+      <rect width="640" height="640" rx="48" fill="url(#bg)" />
+      <circle cx="520" cy="140" r="120" fill="${accentColor}" opacity="0.16" />
+      <circle cx="180" cy="480" r="170" fill="#f5efde" opacity="0.08" />
+      <path d="M140 474c58-182 151-273 279-273" stroke="${accentColor}" stroke-width="12" stroke-linecap="round" opacity="0.7" />
+      <path d="M208 472c16-120 70-205 164-255" stroke="#f4e8cd" stroke-width="3" stroke-dasharray="8 12" opacity="0.7" />
+      <rect x="92" y="82" width="456" height="476" rx="26" fill="rgba(9, 12, 10, 0.12)" />
+      <text x="124" y="368" fill="#f4efdf" font-family="Georgia, serif" font-size="56" letter-spacing="2">${title}</text>
+      <text x="126" y="430" fill="#f4efdf" font-family="Arial, sans-serif" font-size="24" opacity="0.8">${artist}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
 function normalizeText(value: string) {
   return value
     .toLowerCase()
@@ -147,6 +174,7 @@ async function hydratePublicArtworkForPickUncached(
     return {
       ...pick,
       imageUrl: exactThumbnailUrl,
+      placeholderImageUrl: pick.placeholderImageUrl ?? pick.imageUrl,
       artworkSourceUrl: exactSpotifyUrl
     };
   }
@@ -159,7 +187,8 @@ async function hydratePublicArtworkForPickUncached(
   if (thumbnailUrl) {
     return {
       ...pick,
-      imageUrl: thumbnailUrl
+      imageUrl: thumbnailUrl,
+      placeholderImageUrl: pick.placeholderImageUrl ?? pick.imageUrl
     };
   }
 
@@ -185,6 +214,7 @@ async function hydratePublicArtworkForPickUncached(
   return {
     ...pick,
     imageUrl: itunesArtworkUrl,
+    placeholderImageUrl: pick.placeholderImageUrl ?? pick.imageUrl,
     ...(exactSpotifyUrl
       ? {
           spotifyUrl: buildSpotifySearchUrl({

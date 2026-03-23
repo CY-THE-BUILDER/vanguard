@@ -317,8 +317,16 @@ export function isStrongFlavorMatch(pick: JazzPick, vibe: Vibe) {
 }
 
 export function rankPicksForVibe(picks: JazzPick[], vibe: Vibe, limit = 5) {
+  return rankPicksForVibeWithSeed(picks, vibe, 0, limit);
+}
+
+function scoreWithSeed(pick: JazzPick, vibe: Vibe, seed: number) {
+  return scorePickForVibe(pick, vibe) * 1000 + (hashValue(`${pick.id}:${vibe}:${seed}`) % 997);
+}
+
+export function rankPicksForVibeWithSeed(picks: JazzPick[], vibe: Vibe, seed = 0, limit = 5) {
   const deduped = dedupePicks(picks).sort(
-    (left, right) => scorePickForVibe(right, vibe) - scorePickForVibe(left, vibe)
+    (left, right) => scoreWithSeed(right, vibe, seed) - scoreWithSeed(left, vibe, seed)
   );
   const strongMatches = deduped.filter((pick) => isStrongFlavorMatch(pick, vibe));
 
@@ -333,9 +341,13 @@ export function selectFreshPicks(
   picks: JazzPick[],
   excludedIds: Set<string>,
   limit = 5,
-  rotation = 0
+  rotation = 0,
+  seed = 0
 ) {
   const deduped = dedupePicks(picks);
+  const seeded = [...deduped].sort(
+    (left, right) => hashValue(`${left.id}:${seed}`) - hashValue(`${right.id}:${seed}`)
+  );
   const rotate = (input: JazzPick[], rotation: number) => {
     if (input.length <= 1 || rotation === 0) {
       return input;
@@ -350,16 +362,16 @@ export function selectFreshPicks(
   };
 
   if (excludedIds.size === 0) {
-    return rotate(deduped, rotation).slice(0, limit);
+    return rotate(seeded, rotation).slice(0, limit);
   }
 
   const fresh = rotate(
-    deduped.filter((pick) => !excludedIds.has(pick.id)),
+    seeded.filter((pick) => !excludedIds.has(pick.id)),
     rotation
   );
   const seen = new Set(fresh.map((pick) => pick.id));
   const fallback = rotate(
-    deduped.filter((pick) => !seen.has(pick.id)),
+    seeded.filter((pick) => !seen.has(pick.id)),
     rotation
   );
 

@@ -17,6 +17,7 @@ export type JazzPick = {
   vibeTags: Vibe[];
   recommendationReason: string;
   imageUrl: string;
+  placeholderImageUrl?: string;
   spotifyUrl: string;
   shareUrl: string;
   artworkSourceUrl?: string;
@@ -53,6 +54,8 @@ export type RecommendationBatchRequest = {
   vibe: Vibe;
   excludeIds: string[];
   rotation: number;
+  seed?: number;
+  limit?: number;
 };
 
 export type RecommendationBatchResponse = {
