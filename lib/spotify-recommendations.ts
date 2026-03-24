@@ -40,6 +40,13 @@ export type ListenerTasteProfile = {
   favoriteDecadeStart: number | null;
 };
 
+export type ListenerArtistSignals = {
+  topArtists: SpotifyArtistEntity[];
+  topTracks: SpotifyTrackEntity[];
+  recentlyPlayed: SpotifyTrackEntity[];
+  savedTracks: SpotifyTrackEntity[];
+};
+
 type RecommendationContext = {
   relationship: "familiar" | "saved" | "recent" | "adjacent" | "fresh";
   sonic: "shadowy" | "electric" | "open" | "steady" | "restless";
@@ -51,6 +58,7 @@ const strongFlavorMatchThreshold = 12;
 
 const genreToVibes: Array<{ match: RegExp; vibes: Vibe[]; subgenre: string }> = [
   { match: /fusion|jazz funk|nu jazz|broken beat|jazztronica/i, vibes: ["Fusion", "Exploratory"], subgenre: "Fusion" },
+  { match: /piano jazz|jazz piano/i, vibes: ["Focus", "Late Night"], subgenre: "Piano Jazz" },
   { match: /modal jazz|spiritual jazz/i, vibes: ["Exploratory", "Late Night"], subgenre: "Modal Jazz" },
   { match: /hard bop|bebop|post-bop/i, vibes: ["Classic", "Exploratory"], subgenre: "Hard Bop" },
   { match: /cool jazz|west coast jazz/i, vibes: ["Classic", "Focus"], subgenre: "Cool Jazz" },
@@ -147,6 +155,45 @@ export function buildTasteProfile(
           ) * 10
         : null
   };
+}
+
+export function collectListenerArtists(signals: ListenerArtistSignals) {
+  const deduped = new Map<string, SpotifyArtistEntity>();
+
+  [...signals.topArtists]
+    .sort((left, right) => scoreArtistSignals(right, signals) - scoreArtistSignals(left, signals))
+    .forEach((artist) => {
+      deduped.set(artist.id, artist);
+    });
+
+  [...signals.topTracks, ...signals.recentlyPlayed, ...signals.savedTracks]
+    .flatMap((track) => track.artists)
+    .forEach((artist) => {
+      const existing = deduped.get(artist.id);
+      deduped.set(artist.id, {
+        ...artist,
+        genres: existing?.genres ?? artist.genres ?? []
+      });
+    });
+
+  return [...deduped.values()].sort(
+    (left, right) => scoreArtistSignals(right, signals) - scoreArtistSignals(left, signals)
+  );
+}
+
+function scoreArtistSignals(artist: SpotifyArtistEntity, signals: ListenerArtistSignals) {
+  const name = normalizeText(artist.name);
+  let score = 0;
+
+  if (signals.topArtists.some((entry) => entry.id === artist.id)) {
+    score += 10;
+  }
+
+  score += signals.topTracks.filter((track) => track.artists.some((entry) => normalizeText(entry.name) === name)).length * 4;
+  score += signals.recentlyPlayed.filter((track) => track.artists.some((entry) => normalizeText(entry.name) === name)).length * 3;
+  score += signals.savedTracks.filter((track) => track.artists.some((entry) => normalizeText(entry.name) === name)).length * 2;
+
+  return score;
 }
 
 export const vibeProfiles: Record<
@@ -463,31 +510,38 @@ export function buildAlbumRecommendationReason(params: {
     Classic: {
       familiar: [
         `既然最近一直回到 ${params.sourceArtistName}，今天就讓《${params.albumTitle}》把那份老派分寸完整走一遍。`,
-        `你耳朵還停在 ${params.sourceArtistName} 的餘韻裡，《${params.albumTitle}》剛好把那道經典的光澤接住。`
+        `你耳朵還停在 ${params.sourceArtistName} 的餘韻裡，《${params.albumTitle}》剛好把那道經典的光澤接住。`,
+        `既然你最近又回到 ${params.sourceArtistName}，不如讓《${params.albumTitle}》把那種老練、準確、毫不多話的好再講一遍。`
       ],
       saved: [
         `既然你曾經替 ${params.albumArtist} 留過位置，今天回到《${params.albumTitle}》，會比記憶裡更顯得沉著。`,
-        `《${params.albumTitle}》這種專輯不適合只取一段，既然你留過 ${params.albumArtist}，就讓整張的起承轉合自己說話。`
+        `《${params.albumTitle}》這種專輯不適合只取一段，既然你留過 ${params.albumArtist}，就讓整張的起承轉合自己說話。`,
+        `既然你替 ${params.albumArtist} 留過位置，今天回到《${params.albumTitle}》，像把一張知道分量的老片重新放上轉盤。`
       ],
       recent: [
         `耳朵還記得 ${params.albumArtist} 的手勢時，接著聽《${params.albumTitle}》會有種順水推舟的自然。`,
-        `你最近才碰過 ${params.albumArtist}，現在回到《${params.albumTitle}》，像走進一間陳設簡練卻處處講究的房間。`
+        `你最近才碰過 ${params.albumArtist}，現在回到《${params.albumTitle}》，像走進一間陳設簡練卻處處講究的房間。`,
+        `趁耳朵還記得 ${params.albumArtist} 的氣口，讓《${params.albumTitle}》接上來，整張的章法會顯得特別漂亮。`
       ],
       adjacent: [
         `沿著 ${params.sourceArtistName} 這條線再往外走一步，《${params.albumTitle}》會把視野打開，卻不會失掉經典的骨架。`,
-        `如果想從 ${params.sourceArtistName} 再聽出更完整的輪廓，《${params.albumTitle}》會是一個很準的延伸。`
+        `如果想從 ${params.sourceArtistName} 再聽出更完整的輪廓，《${params.albumTitle}》會是一個很準的延伸。`,
+        `從 ${params.sourceArtistName} 再往外多走一步，《${params.albumTitle}》會把經典爵士那種收放有度的美感交代得很完整。`
       ],
       fresh: [
         `如果今天想從真正穩得住的地方開始，《${params.albumTitle}》會是很好的第一張。`,
-        `《${params.albumTitle}》不需要鋪陳太多，一放下去，整個房間就會自己站穩。`
+        `《${params.albumTitle}》不需要鋪陳太多，一放下去，整個房間就會自己站穩。`,
+        `《${params.albumTitle}》像那種永遠知道該在第幾首把門打開的專輯，拿來開始一天總是很體面。`
       ],
       sonic: [
         "它的呼吸和留白都拿得準，像老牌樂手下手，不急，也不空。",
-        "聽這張很像看一位老派調酒師收尾，動作極少，卻沒有一筆多餘。"
+        "聽這張很像看一位老派調酒師收尾，動作極少，卻沒有一筆多餘。",
+        "它的速度不急，光澤卻很深，像黑膠落針後第一圈就把場子定住。"
       ],
       era: [
         "那種歷久不疲的重量，在這張裡不是招牌，而是整張專輯的底色。",
-        "它像一本翻得很舊卻始終好讀的冊子，每次回來，都還會透出新的光。"
+        "它像一本翻得很舊卻始終好讀的冊子，每次回來，都還會透出新的光。",
+        `真正好的老片不會拿年代說服你，《${params.albumTitle}》就是那種一開聲就足夠的存在。`
       ]
     },
     Exploratory: {
@@ -708,11 +762,7 @@ export function buildTrackPick(
     subgenre,
     vibeTags,
     recommendationReason: reasonOverride ?? buildReason(sourceArtist.name, origin, fallbackVibe),
-    imageUrl: track.album.images?.[0]?.url ?? buildSpotifySearchUrl({
-      title: track.name,
-      artist: track.artists[0]?.name ?? sourceArtist.name,
-      type: "track"
-    }),
+    imageUrl: track.album.images?.[0]?.url ?? "",
     spotifyUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`,
     shareUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`,
     year: Number.isNaN(releaseYear) ? new Date().getFullYear() : releaseYear,
@@ -741,11 +791,7 @@ export function buildAlbumPick(
     subgenre,
     vibeTags,
     recommendationReason: reasonOverride ?? buildReason(sourceArtist.name, origin, fallbackVibe),
-    imageUrl: album.images?.[0]?.url ?? buildSpotifySearchUrl({
-      title: album.name,
-      artist: albumArtist,
-      type: "album"
-    }),
+    imageUrl: album.images?.[0]?.url ?? "",
     spotifyUrl: album.external_urls?.spotify ?? `https://open.spotify.com/album/${album.id}`,
     shareUrl: album.external_urls?.spotify ?? `https://open.spotify.com/album/${album.id}`,
     year: Number.isNaN(releaseYear) ? new Date().getFullYear() : releaseYear,

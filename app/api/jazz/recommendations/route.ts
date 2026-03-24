@@ -8,6 +8,7 @@ import {
   buildAlbumPick,
   buildAlbumRecommendationReason,
   buildCuratedFeed,
+  collectListenerArtists,
   buildTasteProfile,
   buildTrackPick,
   isStrongFlavorMatch,
@@ -73,10 +74,10 @@ function albumMatchesActiveFlavor(
 
 function selectSeedArtistsForVibe(
   activeVibe: JazzPick["vibeTags"][number],
-  topArtists: SpotifyArtistEntity[]
+  listenerArtists: SpotifyArtistEntity[]
 ) {
   const profile = vibeProfiles[activeVibe];
-  const rankedTopArtists = [...topArtists]
+  const rankedTopArtists = [...listenerArtists]
     .filter(isJazzAdjacentArtist)
     .sort((left, right) => scoreArtistForVibe(right, activeVibe) - scoreArtistForVibe(left, activeVibe))
     .filter((artist) => scoreArtistForVibe(artist, activeVibe) >= 8)
@@ -109,6 +110,14 @@ async function getTopArtists(accessToken: string) {
   ]);
 
   return [...shortTerm.items, ...mediumTerm.items];
+}
+
+async function safeSpotifyLoad<T>(loader: () => Promise<T>, fallback: T) {
+  try {
+    return await loader();
+  } catch {
+    return fallback;
+  }
 }
 
 async function getTopTracks(accessToken: string) {
@@ -162,12 +171,18 @@ async function searchSpotify(
 }
 
 async function hydrateCuratedPick(accessToken: string, pick: JazzPick) {
-  const query = `${pick.type}:"${pick.title}" artist:"${pick.artist}"`;
-  const response = await searchSpotify(accessToken, {
-    q: query,
-    type: pick.type,
-    limit: 1
-  });
+  let response: SearchResponse;
+
+  try {
+    const query = `${pick.type}:"${pick.title}" artist:"${pick.artist}"`;
+    response = await searchSpotify(accessToken, {
+      q: query,
+      type: pick.type,
+      limit: 1
+    });
+  } catch {
+    return hydratePublicArtworkForPick(pick);
+  }
 
   if (pick.type === "track") {
     const track = response.tracks?.items[0];
@@ -203,11 +218,15 @@ async function buildSearchDrivenPicks(
 
       const responses = await Promise.all(
         queries.map((query) =>
-          searchSpotify(accessToken, {
-            q: query,
-            type: "album",
-            limit: 5
-          })
+          safeSpotifyLoad(
+            () =>
+              searchSpotify(accessToken, {
+                q: query,
+                type: "album",
+                limit: 5
+              }),
+            {} as SearchResponse
+          )
         )
       );
 
@@ -335,10 +354,10 @@ function buildSignalDrivenPicks(
 
 async function loadListenerData(accessToken: string): Promise<ListenerData> {
   const [topArtists, topTracks, recentlyPlayed, savedTracks] = await Promise.all([
-    getTopArtists(accessToken),
-    getTopTracks(accessToken),
-    getRecentlyPlayed(accessToken),
-    getSavedTracks(accessToken)
+    safeSpotifyLoad(() => getTopArtists(accessToken), [] as SpotifyArtistEntity[]),
+    safeSpotifyLoad(() => getTopTracks(accessToken), [] as SpotifyTrackEntity[]),
+    safeSpotifyLoad(() => getRecentlyPlayed(accessToken), [] as SpotifyTrackEntity[]),
+    safeSpotifyLoad(() => getSavedTracks(accessToken), [] as SpotifyTrackEntity[])
   ]);
 
   return {
@@ -366,8 +385,14 @@ async function buildFeedForVibe(params: {
   }
 
   const { topArtists, topTracks, recentlyPlayed, savedTracks, tasteProfile } = listenerData;
+  const listenerArtists = collectListenerArtists({
+    topArtists,
+    topTracks,
+    recentlyPlayed,
+    savedTracks
+  });
 
-  const seedArtists = selectSeedArtistsForVibe(vibe, topArtists).filter(
+  const seedArtists = selectSeedArtistsForVibe(vibe, listenerArtists).filter(
     (artist) => isJazzAdjacentArtist(artist) || matchesCuratedJazzArtist(artist.name)
   );
 

@@ -20,6 +20,31 @@ type ItunesResponse = {
 
 const publicArtworkHydrationCache = new Map<string, Promise<JazzPick>>();
 
+export function isRenderableArtworkUrl(url?: string | null) {
+  if (!url) {
+    return false;
+  }
+
+  if (url.startsWith("data:image/") || url.startsWith("blob:")) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (!/^https?:$/.test(parsed.protocol)) {
+      return false;
+    }
+
+    if (/open\.spotify\.com$/i.test(parsed.hostname)) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function buildGeneratedCoverArt(
   title: string,
   artist: string,

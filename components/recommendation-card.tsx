@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type MouseEvent } from "react";
 import { VinylSpinner } from "@/components/vinyl-spinner";
-import { buildGeneratedCoverArt } from "@/lib/cover-art";
+import { buildGeneratedCoverArt, isRenderableArtworkUrl } from "@/lib/cover-art";
 import { getSpotifyActionUrl, getSpotifyNavigationTarget } from "@/lib/spotify-actions";
 import { JazzPick } from "@/types/jazz";
 
@@ -23,7 +23,10 @@ export function RecommendationCard({
 }: RecommendationCardProps) {
   const spotifyHref = getSpotifyActionUrl(pick);
   const placeholderImage = pick.placeholderImageUrl || buildGeneratedCoverArt(pick.title, pick.artist, pick.accentColor);
-  const actualImage = pick.imageUrl && pick.imageUrl !== placeholderImage ? pick.imageUrl : null;
+  const actualImage =
+    pick.imageUrl && pick.imageUrl !== placeholderImage && isRenderableArtworkUrl(pick.imageUrl)
+      ? pick.imageUrl
+      : null;
   const [imageSrc, setImageSrc] = useState(placeholderImage);
   const [isImageLoading, setIsImageLoading] = useState(Boolean(actualImage));
 
