@@ -51,7 +51,7 @@ function normalizeEntry(entry: RecommendationHistory[Vibe]): RecommendationHisto
     return {
       ids: entry.filter((value): value is string => typeof value === "string").slice(0, 20),
       rotation: 0,
-      recentPool: entry.filter((value): value is string => typeof value === "string").slice(0, 24)
+      recentPool: entry.filter((value): value is string => typeof value === "string").slice(0, 40)
     };
   }
 
@@ -62,9 +62,9 @@ function normalizeEntry(entry: RecommendationHistory[Vibe]): RecommendationHisto
         : [],
       rotation: typeof entry.rotation === "number" ? entry.rotation : 0,
       recentPool: Array.isArray(entry.recentPool)
-        ? entry.recentPool.filter((value): value is string => typeof value === "string").slice(0, 24)
+        ? entry.recentPool.filter((value): value is string => typeof value === "string").slice(0, 40)
         : Array.isArray(entry.ids)
-          ? entry.ids.filter((value): value is string => typeof value === "string").slice(0, 24)
+          ? entry.ids.filter((value): value is string => typeof value === "string").slice(0, 40)
           : []
     };
   }
@@ -79,7 +79,7 @@ function normalizeEntry(entry: RecommendationHistory[Vibe]): RecommendationHisto
 export function getRecentRecommendationIds(vibe: Vibe) {
   const history = readHistory();
   const entry = normalizeEntry(history[vibe]);
-  return (entry.recentPool && entry.recentPool.length > 0 ? entry.recentPool : entry.ids).slice(0, 24);
+  return (entry.recentPool && entry.recentPool.length > 0 ? entry.recentPool : entry.ids).slice(0, 40);
 }
 
 export function getRecommendationRotation(vibe: Vibe) {
@@ -103,7 +103,7 @@ export function getGlobalRecommendationIds() {
       return [];
     }
 
-    return parsed.filter((value): value is string => typeof value === "string").slice(0, 48);
+    return parsed.filter((value): value is string => typeof value === "string").slice(0, 96);
   } catch {
     return [];
   }
@@ -113,8 +113,8 @@ export function rememberRecommendationIds(vibe: Vibe, ids: string[]) {
   const history = readHistory();
   const entry = normalizeEntry(history[vibe]);
   const globalRecentPool = getGlobalRecommendationIds();
-  const mergedRecentPool = Array.from(new Set([...ids, ...(entry.recentPool ?? []), ...entry.ids])).slice(0, 24);
-  const mergedGlobalPool = Array.from(new Set([...ids, ...globalRecentPool])).slice(0, 48);
+  const mergedRecentPool = Array.from(new Set([...ids, ...(entry.recentPool ?? []), ...entry.ids])).slice(0, 40);
+  const mergedGlobalPool = Array.from(new Set([...ids, ...globalRecentPool])).slice(0, 96);
 
   writeHistory({
     ...history,
@@ -136,7 +136,7 @@ export function createRecommendationSessionSeed() {
   }
 
   const previousValue = Number.parseInt(window.localStorage.getItem(SESSION_SEED_KEY) ?? "0", 10) || 0;
-  const nextValue = previousValue + 1;
+  const nextValue = Date.now() + previousValue + Math.floor(Math.random() * 1000);
   window.localStorage.setItem(SESSION_SEED_KEY, String(nextValue));
   return nextValue;
 }

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createRecommendationSessionSeed,
   getGlobalRecommendationIds,
@@ -10,6 +10,7 @@ import {
 describe("recommendation history", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   it("keeps recent ids and increments rotation each time a shelf is remembered", () => {
@@ -49,8 +50,18 @@ describe("recommendation history", () => {
   });
 
   it("creates a new session seed every time the app starts", () => {
-    expect(createRecommendationSessionSeed()).toBe(1);
-    expect(createRecommendationSessionSeed()).toBe(2);
-    expect(createRecommendationSessionSeed()).toBe(3);
+    vi.spyOn(Date, "now").mockReturnValue(1710000000000);
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(0.111)
+      .mockReturnValueOnce(0.222)
+      .mockReturnValueOnce(0.333);
+
+    const first = createRecommendationSessionSeed();
+    const second = createRecommendationSessionSeed();
+    const third = createRecommendationSessionSeed();
+
+    expect(first).not.toBe(second);
+    expect(second).not.toBe(third);
+    expect(first).toBeGreaterThan(1710000000000);
   });
 });

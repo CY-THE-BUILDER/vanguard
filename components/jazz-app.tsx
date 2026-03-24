@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { SavedPicks } from "@/components/saved-picks";
 import { ShareSheet } from "@/components/share-sheet";
+import { SpotifyConnectionCard } from "@/components/spotify-connection-card";
 import { Toasts } from "@/components/toast";
 import { VinylSpinner } from "@/components/vinyl-spinner";
 import { VibeFilter } from "@/components/vibe-filter";
@@ -18,6 +18,12 @@ import {
   rememberRecommendationIds
 } from "@/lib/recommendation-history";
 import { buildCuratedFeed } from "@/lib/spotify-recommendations";
+import {
+  clearStoredSpotifySession,
+  normalizeSpotifySession,
+  readStoredSpotifySession,
+  writeStoredSpotifySession
+} from "@/lib/spotify-session";
 import {
   buildPickSharePayload,
   copyShareText,
@@ -95,10 +101,12 @@ export function JazzApp() {
   const [savedPicks, setSavedPicks] = useState<JazzPick[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const [spotifySession, setSpotifySession] = useState<SpotifySession>({
-    configured: true,
-    connected: false
-  });
+  const [spotifySession, setSpotifySession] = useState<SpotifySession>(() =>
+    readStoredSpotifySession() ?? {
+      configured: true,
+      connected: false
+    }
+  );
   const [isLoadingSpotify, setIsLoadingSpotify] = useState(true);
   const [shareTarget, setShareTarget] = useState<JazzPick | null>(null);
   const [feedByVibe, setFeedByVibe] = useState<Record<Vibe, RecommendationFeed>>(() =>
@@ -124,16 +132,26 @@ export function JazzApp() {
         const response = await fetch("/api/spotify/session", {
           cache: "no-store"
         });
-        const session = (await response.json()) as SpotifySession;
+        const session = normalizeSpotifySession(
+          (await response.json()) as SpotifySession,
+          readStoredSpotifySession()
+        );
         if (!ignore) {
           setSpotifySession(session);
+          if (session.connected) {
+            writeStoredSpotifySession(session);
+          } else {
+            clearStoredSpotifySession();
+          }
         }
       } catch {
         if (!ignore) {
-          setSpotifySession({
-            configured: true,
-            connected: false
-          });
+          setSpotifySession(
+            readStoredSpotifySession() ?? {
+              configured: true,
+              connected: false
+            }
+          );
         }
       } finally {
         if (!ignore) {
@@ -445,6 +463,7 @@ export function JazzApp() {
         profileUrl: null,
         country: null
       }));
+      clearStoredSpotifySession();
       pushToast("已中斷 Spotify 連線。");
     } catch {
       pushToast("目前無法中斷 Spotify 連線。");
@@ -499,84 +518,11 @@ export function JazzApp() {
                 <span>已備好 {feed.picks.length} 張</span>
                 <span>收藏 {savedPicks.length} 張</span>
               </div>
-
-              <div className="mt-8 rounded-[24px] border border-white/10 bg-black/20 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.22em] text-mist/80">Spotify</p>
-                    {isLoadingSpotify ? (
-                      <div className="mt-3 flex items-center gap-3 text-sm text-mist">
-                        <VinylSpinner size="sm" />
-                        <span>正在確認連線狀態...</span>
-                      </div>
-                    ) : spotifySession.connected ? (
-                      <>
-                        <p className="mt-2 text-lg text-cream">
-                          已連接 {spotifySession.displayName ?? "Spotify"}
-                        </p>
-                        <p className="mt-1 text-sm text-mist">
-                          {spotifySession.product
-                            ? `已開始按你的 ${spotifySession.product} 聆聽習慣微調今天的選片。`
-                            : "已開始按你的聆聽習慣微調今天的選片。"}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="mt-2 text-lg text-cream">連接 Spotify</p>
-                        <p className="mt-1 text-sm text-mist">
-                          連上帳號後，推薦會更貼近你真正常聽的聲音。
-                        </p>
-                      </>
-                    )}
-                  </div>
-
-                  {spotifySession.connected && spotifySession.avatarUrl ? (
-                    <Image
-                      src={spotifySession.avatarUrl}
-                      alt={spotifySession.displayName ?? "Spotify profile"}
-                      width={48}
-                      height={48}
-                      unoptimized
-                      className="h-12 w-12 rounded-full border border-white/10 object-cover"
-                    />
-                  ) : null}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {spotifySession.connected ? (
-                    <>
-                      {spotifySession.profileUrl ? (
-                        <a
-                          href={spotifySession.profileUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-full bg-olive-50 px-4 py-2 text-sm font-medium text-ink transition hover:bg-olive-100"
-                        >
-                          查看 Spotify 個人頁
-                        </a>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={handleSpotifyLogout}
-                        className="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-cream transition hover:bg-white/10"
-                      >
-                        中斷連線
-                      </button>
-                    </>
-                  ) : (
-                    <a
-                      href="/api/spotify/login"
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                        spotifySession.configured
-                          ? "bg-olive-50 text-ink hover:bg-olive-100"
-                          : "cursor-not-allowed border border-white/10 bg-white/5 text-mist pointer-events-none"
-                      }`}
-                    >
-                      {spotifySession.configured ? "連接 Spotify" : "尚未完成設定"}
-                    </a>
-                  )}
-                </div>
-              </div>
+              <SpotifyConnectionCard
+                isLoading={isLoadingSpotify}
+                session={spotifySession}
+                onLogout={handleSpotifyLogout}
+              />
             </aside>
           </header>
 

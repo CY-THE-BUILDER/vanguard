@@ -145,7 +145,7 @@ export function RecommendationCard({
 
         <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-mist/80">
           <span>{pick.durationLabel}</span>
-          <span>{pick.vibeTags.join(" / ")}</span>
+          <span>{pick.vibeTags[0]}</span>
         </div>
 
         <div className="flex flex-wrap gap-3">

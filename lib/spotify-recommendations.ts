@@ -258,6 +258,33 @@ export function scorePickForVibe(pick: JazzPick, vibe: Vibe) {
   return score;
 }
 
+export function getPrimaryVibeTag(pick: Pick<JazzPick, "vibeTags" | "subgenre" | "type" | "year">) {
+  const availableVibes: Vibe[] = pick.vibeTags.length > 0 ? [...pick.vibeTags] : ["Classic"];
+  const scoredPick = pick as JazzPick;
+
+  return [...availableVibes].sort((left, right) => {
+    const scoreDelta = scorePickForVibe(scoredPick, right) - scorePickForVibe(scoredPick, left);
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
+
+    return availableVibes.indexOf(left) - availableVibes.indexOf(right);
+  })[0];
+}
+
+export function normalizePickFlavor(pick: JazzPick): JazzPick {
+  const primaryVibe = getPrimaryVibeTag(pick);
+
+  if (pick.vibeTags.length === 1 && pick.vibeTags[0] === primaryVibe) {
+    return pick;
+  }
+
+  return {
+    ...pick,
+    vibeTags: [primaryVibe]
+  };
+}
+
 export function scoreArtistForVibe(artist: SpotifyArtistEntity, vibe: Vibe) {
   const haystack = normalizeText([artist.name, ...(artist.genres ?? [])].join(" "));
   const profile = vibeProfiles[vibe];
@@ -673,8 +700,7 @@ export function buildTrackPick(
 ): JazzPick {
   const releaseYear = Number(track.album.release_date?.slice(0, 4) ?? new Date().getFullYear());
   const { subgenre, vibeTags } = inferVibes(sourceArtist.genres ?? [], fallbackVibe);
-
-  return {
+  return normalizePickFlavor({
     id: `spotify-track-${track.id}`,
     title: track.name,
     artist: track.artists.map((artist) => artist.name).join(", "),
@@ -694,7 +720,7 @@ export function buildTrackPick(
     accentColor: "#8ea58c",
     source: "spotify",
     seedArtist: sourceArtist.name
-  };
+  });
 }
 
 export function buildAlbumPick(
@@ -707,8 +733,7 @@ export function buildAlbumPick(
   const releaseYear = Number(album.release_date?.slice(0, 4) ?? new Date().getFullYear());
   const { subgenre, vibeTags } = inferVibes(sourceArtist.genres ?? [], fallbackVibe);
   const albumArtist = album.artists?.map((artist) => artist.name).join(", ") ?? sourceArtist.name;
-
-  return {
+  return normalizePickFlavor({
     id: `spotify-album-${album.id}`,
     title: album.name,
     artist: albumArtist,
@@ -728,7 +753,7 @@ export function buildAlbumPick(
     accentColor: "#8ea58c",
     source: "spotify",
     seedArtist: sourceArtist.name
-  };
+  });
 }
 
 export function dedupePicks(picks: JazzPick[]) {

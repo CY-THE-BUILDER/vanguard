@@ -36,7 +36,7 @@ export async function GET() {
     return NextResponse.json({
       configured: true,
       connected: true,
-      displayName: profile.display_name ?? "Spotify listener",
+      displayName: profile.display_name ?? null,
       avatarUrl: profile.images?.[0]?.url ?? null,
       product: profile.product ?? null,
       profileUrl: profile.external_urls?.spotify ?? null,
@@ -50,7 +50,7 @@ export async function GET() {
     return NextResponse.json({
       configured: true,
       connected: true,
-      displayName: "Spotify listener",
+      displayName: null,
       avatarUrl: null,
       product: null,
       profileUrl: null,

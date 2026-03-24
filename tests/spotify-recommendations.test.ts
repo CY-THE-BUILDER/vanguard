@@ -6,6 +6,7 @@ import {
   buildTasteProfile,
   buildTrackPick,
   diversifyPicks,
+  getPrimaryVibeTag,
   inferVibes,
   rankPicksForVibe,
   selectFreshPicks,
@@ -76,6 +77,32 @@ describe("spotify recommendation mapping", () => {
     expect(pick.spotifyUrl).toBe("https://open.spotify.com/album/album-1");
     expect(pick.type).toBe("album");
     expect(pick.artist).toBe("Miles Davis");
+    expect(pick.vibeTags.length).toBe(1);
+  });
+
+  it("keeps one dominant flavor per pick even if the source genre matches multiple vibes", () => {
+    const pick = buildAlbumPick(
+      {
+        id: "album-fusion",
+        name: "Black Focus",
+        release_date: "2016-11-04",
+        images: [{ url: "https://i.scdn.co/image/black-focus" }],
+        external_urls: {
+          spotify: "https://open.spotify.com/album/album-fusion"
+        },
+        artists: [{ id: "artist-fusion", name: "Yussef Kamaal" }]
+      },
+      {
+        id: "artist-fusion",
+        name: "Yussef Kamaal",
+        genres: ["jazz fusion", "broken beat"]
+      },
+      "Late Night",
+      "search"
+    );
+
+    expect(pick.vibeTags).toEqual(["Fusion"]);
+    expect(getPrimaryVibeTag(pick)).toBe("Fusion");
   });
 
   it("falls back to a Spotify search URL when an exact item has not been hydrated yet", () => {
@@ -381,7 +408,8 @@ describe("spotify recommendation mapping", () => {
 
     expect(exploratoryShelf).toContain("Out to Lunch!");
     expect(fusionShelf).not.toEqual(lateNightShelf);
-    expect(fusionShelf[0]).toBe("Head Hunters");
+    expect(fusionShelf).toContain("Head Hunters");
+    expect(fusionShelf).toContain("Sextant");
     expect(lateNightShelf).toContain("Night Dreamer");
     expect(countOverlap(exploratoryShelf, fusionShelf)).toBeLessThanOrEqual(1);
     expect(countOverlap(fusionShelf, lateNightShelf)).toBeLessThanOrEqual(1);

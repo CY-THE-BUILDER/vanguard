@@ -101,7 +101,7 @@ export const jazzPicks: JazzPick[] = [
       artist: "The Dave Brubeck Quartet",
       type: "album",
       subgenre: "Cool Jazz",
-      vibeTags: ["Classic", "Focus"],
+      vibeTags: ["Focus", "Classic"],
       recommendationReason: "節拍和留白都收得很漂亮，適合把注意力慢慢帶回來，也適合整張放完。",
       spotifyUrl: "https://open.spotify.com/album/6P3jzdPK5VMbzuJ2HcRt9y",
       shareUrl: "https://open.spotify.com/album/6P3jzdPK5VMbzuJ2HcRt9y",
@@ -137,7 +137,7 @@ export const jazzPicks: JazzPick[] = [
       artist: "Cannonball Adderley",
       type: "album",
       subgenre: "Hard Bop",
-      vibeTags: ["Classic", "Focus"],
+      vibeTags: ["Focus", "Classic"],
       recommendationReason: "銅管的光澤和節奏的彈性都漂亮得恰到好處，任何時候放下去都體面。",
       spotifyUrl: "https://open.spotify.com/album/3Wu0chxAm4GxSeRnIIf2Om",
       shareUrl: "https://open.spotify.com/album/3Wu0chxAm4GxSeRnIIf2Om",
@@ -155,7 +155,7 @@ export const jazzPicks: JazzPick[] = [
       artist: "Sonny Rollins",
       type: "album",
       subgenre: "Hard Bop",
-      vibeTags: ["Classic", "Focus"],
+      vibeTags: ["Focus", "Classic"],
       recommendationReason: "線條飽滿，步伐穩，像一張永遠知道什麼時候該往前、什麼時候該留白的專輯。",
       spotifyUrl: "https://open.spotify.com/album/02fJL5DUx4Ux71GPRXUCUj",
       shareUrl: "https://open.spotify.com/album/02fJL5DUx4Ux71GPRXUCUj",
@@ -587,7 +587,7 @@ export const jazzPicks: JazzPick[] = [
       artist: "Bill Evans & Jim Hall",
       type: "album",
       subgenre: "Piano Jazz",
-      vibeTags: ["Late Night", "Focus"],
+      vibeTags: ["Focus", "Late Night"],
       recommendationReason: "兩個人都把力道收得很低，卻讓每一次靠近都更清楚，適合安靜地整張放完。",
       spotifyUrl: "https://open.spotify.com/album/3b2s2A8DPISbaQNxhrEsGQ",
       shareUrl: "https://open.spotify.com/album/3b2s2A8DPISbaQNxhrEsGQ",
@@ -605,7 +605,7 @@ export const jazzPicks: JazzPick[] = [
       artist: "Bill Evans Trio",
       type: "album",
       subgenre: "Piano Jazz",
-      vibeTags: ["Classic", "Late Night", "Focus"],
+      vibeTags: ["Focus", "Late Night", "Classic"],
       recommendationReason: "現場的呼吸、鋼琴的留白與低音的步伐都收得近，像把人直接帶回桌燈下那一刻。",
       spotifyUrl: "https://open.spotify.com/album/20ONXPfQ4EmoClthSFCq48",
       shareUrl: "https://open.spotify.com/album/20ONXPfQ4EmoClthSFCq48",
@@ -713,7 +713,7 @@ export const jazzPicks: JazzPick[] = [
       artist: "Grant Green",
       type: "album",
       subgenre: "Jazz",
-      vibeTags: ["Late Night", "Focus"],
+      vibeTags: ["Focus", "Late Night"],
       recommendationReason: "速度放得很鬆，卻沒有一秒散掉。適合在夜裡把呼吸和思緒都慢慢放回原位。",
       spotifyUrl: "https://open.spotify.com/album/1lDtUlOPGKp56gQ24MvmNG",
       shareUrl: "https://open.spotify.com/album/1lDtUlOPGKp56gQ24MvmNG",
@@ -1081,21 +1081,29 @@ export function getCuratedPicksForVibe(
   vibe: JazzPick["vibeTags"][number],
   options?: { limit?: number; excludeIds?: Set<string>; rotation?: number; seed?: number }
 ) {
-  const ids = curatedPickIdsByVibe[vibe];
-  const pickMap = new Map(jazzPicks.map((pick) => [pick.id, pick]));
-  const pool = ids
-    .map((id) => pickMap.get(id))
-    .filter((pick): pick is JazzPick => Boolean(pick));
+  const pool = jazzPicks
+    .map((pick) => ({
+      ...pick,
+      vibeTags: [pick.vibeTags[0]]
+    }))
+    .filter((pick) => pick.vibeTags[0] === vibe);
   const excludedIds = options?.excludeIds ?? new Set<string>();
   const seed = options?.seed ?? 0;
-  const fresh = seededShuffle(
-    pool.filter((pick) => !excludedIds.has(pick.id)),
-    seed + (options?.rotation ?? 0)
+  const visitOffset = pool.length > 0 ? Math.abs(seed) % pool.length : 0;
+  const fresh = rotatePicks(
+    seededShuffle(
+      pool.filter((pick) => !excludedIds.has(pick.id)),
+      seed + hashSeed(vibe)
+    ),
+    (options?.rotation ?? 0) + visitOffset
   );
-  const fallback = seededShuffle(
-    pool.filter((pick) => excludedIds.has(pick.id)),
-    seed + (options?.rotation ?? 0) + 97
+  const fallback = rotatePicks(
+    seededShuffle(
+      pool.filter((pick) => excludedIds.has(pick.id)),
+      seed + hashSeed(`${vibe}-fallback`) + 97
+    ),
+    (options?.rotation ?? 0) + visitOffset
   );
 
-  return rotatePicks([...fresh, ...fallback], options?.rotation ?? 0).slice(0, options?.limit ?? 5);
+  return [...fresh, ...fallback].slice(0, options?.limit ?? 5);
 }

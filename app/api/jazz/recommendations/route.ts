@@ -68,7 +68,7 @@ function albumMatchesActiveFlavor(
   pick: JazzPick,
   activeVibe: JazzPick["vibeTags"][number]
 ) {
-  return isStrongFlavorMatch(pick, activeVibe);
+  return pick.vibeTags[0] === activeVibe && isStrongFlavorMatch(pick, activeVibe);
 }
 
 function selectSeedArtistsForVibe(
