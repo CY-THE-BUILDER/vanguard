@@ -125,7 +125,7 @@ const uiCopy = {
   en: {
     heroEyebrow: "Today's Jazz Picks",
     heroTitle: "Start here.",
-    heroSubtitle: "A tighter stack for the day, so you can spend less time deciding and more time listening.",
+    heroSubtitle: "Less choosing, more listening.",
     vibeEyebrow: "Today's lane",
     savedHeading: "Saved",
     savedSubtitle: "Keep the ones worth coming back to within arm's reach.",
@@ -172,11 +172,11 @@ const uiCopy = {
     chinese: "中文",
     english: "EN",
     vibeDescriptions: {
-      Classic: "Start with the records that settle a room the second the needle lands.",
-      Exploratory: "Take a slight turn off the familiar road and let the ear open into stranger, brighter territory.",
-      Fusion: "Bring the groove closer to the body and leave more room for voltage, motion, and edge.",
-      "Late Night": "For the hour when the room gets quieter, the light gets lower, and the record doesn't need to say everything out loud.",
-      Focus: "Strip the noise away and keep only the pulse that can hold your concentration in place."
+      Classic: "Go with the records that never need an introduction. The first note lands, and the whole room is already where it needs to be.",
+      Exploratory: "Take the side door. These are the records that stretch the form without losing the pulse.",
+      Fusion: "More charge, more motion, more city in the bloodstream. Start here when you want the groove to lean forward.",
+      "Late Night": "Low light, long shadows, no unnecessary volume. These records know how to stay close without crowding the room.",
+      Focus: "Clean lines, steady motion, nothing ornamental. Just enough shape and swing to keep the mind locked in."
     },
     shareLineByVibe: {
       Classic: "Measured, deeply musical, and able to settle the room almost instantly.",
