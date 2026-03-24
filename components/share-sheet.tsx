@@ -1,17 +1,21 @@
 "use client";
 
-import { JazzPick } from "@/types/jazz";
+import { getUiCopy } from "@/lib/vanguard-i18n";
+import { AppLocale, JazzPick } from "@/types/jazz";
 
 type ShareSheetProps = {
   pick: JazzPick | null;
   onClose: () => void;
   onShareTextLink: (pick: JazzPick) => void;
+  locale: AppLocale;
 };
 
-export function ShareSheet({ pick, onClose, onShareTextLink }: ShareSheetProps) {
+export function ShareSheet({ pick, onClose, onShareTextLink, locale }: ShareSheetProps) {
   if (!pick) {
     return null;
   }
+
+  const copy = getUiCopy(locale);
 
   return (
     <div
@@ -27,7 +31,7 @@ export function ShareSheet({ pick, onClose, onShareTextLink }: ShareSheetProps) 
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-mist/80">分享這一刻</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-mist/80">{copy.shareSheetEyebrow}</p>
             <h3 id="share-sheet-title" className="mt-2 font-display text-3xl text-cream">
               {pick.title}
             </h3>
@@ -38,7 +42,7 @@ export function ShareSheet({ pick, onClose, onShareTextLink }: ShareSheetProps) 
             onClick={onClose}
             className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-mist transition hover:bg-white/5 hover:text-cream"
           >
-            關閉
+            {copy.close}
           </button>
         </div>
 
@@ -48,7 +52,7 @@ export function ShareSheet({ pick, onClose, onShareTextLink }: ShareSheetProps) 
             onClick={() => onShareTextLink(pick)}
             className="w-full rounded-[20px] border border-white/10 bg-white/[0.04] px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/[0.08]"
           >
-            <p className="text-sm font-medium text-cream">分享這張專輯</p>
+            <p className="text-sm font-medium text-cream">{copy.shareSheetAction}</p>
           </button>
         </div>
       </div>

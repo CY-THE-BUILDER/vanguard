@@ -26,11 +26,19 @@ import {
   writeStoredSpotifySession
 } from "@/lib/spotify-session";
 import {
+  detectPreferredLocale,
+  getStoredLocale,
+  getUiCopy,
+  localizePick,
+  storeLocale
+} from "@/lib/vanguard-i18n";
+import {
   buildPickSharePayload,
   copyShareText,
   sharePick
 } from "@/lib/share";
 import {
+  AppLocale,
   JazzPick,
   RecommendationBatchRequest,
   RecommendationBatchResponse,
@@ -44,7 +52,12 @@ import {
 const defaultVibe: Vibe = "Classic";
 const initialVisiblePicks = 5;
 
-function buildFallbackFeedMap(savedIds: Set<string>, seed = 0, limit = initialVisiblePicks) {
+function buildFallbackFeedMap(
+  savedIds: Set<string>,
+  locale: AppLocale,
+  seed = 0,
+  limit = initialVisiblePicks
+) {
   const reservedIds = new Set<string>([...savedIds, ...getGlobalRecommendationIds()]);
   const feeds = {} as Record<Vibe, RecommendationFeed>;
 
@@ -57,9 +70,9 @@ function buildFallbackFeedMap(savedIds: Set<string>, seed = 0, limit = initialVi
       seed,
       avoidIds: getRecentRecommendationIds(vibe),
       limit
-    });
+    }).map((pick) => localizePick(pick, locale));
 
-    feeds[vibe] = buildCuratedFeed(vibe, picks);
+    feeds[vibe] = buildCuratedFeed(vibe, picks, [], locale);
     picks.forEach((pick) => {
       reservedIds.add(pick.id);
     });
@@ -72,7 +85,8 @@ function buildRecommendationRequest(
   savedIds: Set<string>,
   vibe: Vibe,
   seed: number,
-  limit: number
+  limit: number,
+  locale: AppLocale
 ): RecommendationBatchRequest {
   return {
     vibe,
@@ -86,11 +100,13 @@ function buildRecommendationRequest(
     ),
     rotation: getRecommendationRotation(vibe),
     seed,
-    limit
+    limit,
+    locale
   };
 }
 
 export function JazzApp() {
+  const [locale, setLocale] = useState<AppLocale>("zh-Hant");
   const [activeVibe, setActiveVibe] = useState<Vibe>(defaultVibe);
   const [savedPicks, setSavedPicks] = useState<JazzPick[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -104,7 +120,7 @@ export function JazzApp() {
   const [isLoadingSpotify, setIsLoadingSpotify] = useState(true);
   const [shareTarget, setShareTarget] = useState<JazzPick | null>(null);
   const [feedByVibe, setFeedByVibe] = useState<Record<Vibe, RecommendationFeed>>(() =>
-    buildFallbackFeedMap(new Set<string>())
+    buildFallbackFeedMap(new Set<string>(), "zh-Hant")
   );
   const [hydratedVibes, setHydratedVibes] = useState<Partial<Record<Vibe, true>>>({});
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
@@ -112,6 +128,15 @@ export function JazzApp() {
   const rememberedSeedRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const storedLocale = getStoredLocale();
+    const nextLocale =
+      storedLocale ??
+      detectPreferredLocale(
+        typeof navigator !== "undefined" ? navigator.languages ?? navigator.language : null
+      );
+
+    setLocale(nextLocale);
+    document.documentElement.lang = nextLocale;
     setSavedPicks(getSavedPicks());
     setSessionSeed(createRecommendationSessionSeed());
     setIsReady(true);
@@ -161,7 +186,19 @@ export function JazzApp() {
   }, []);
 
   const savedIds = useMemo(() => new Set(savedPicks.map((pick) => pick.id)), [savedPicks]);
-  const feed = feedByVibe[activeVibe] ?? buildCuratedFeed(activeVibe, getCuratedPicksForVibe(activeVibe));
+  const localizedSavedPicks = useMemo(
+    () => savedPicks.map((pick) => (pick.source === "curated" ? localizePick(pick, locale) : pick)),
+    [locale, savedPicks]
+  );
+  const copy = getUiCopy(locale);
+  const feed =
+    feedByVibe[activeVibe] ??
+    buildCuratedFeed(
+      activeVibe,
+      getCuratedPicksForVibe(activeVibe).map((pick) => localizePick(pick, locale)),
+      [],
+      locale
+    );
 
   function pushToast(text: string) {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -180,29 +217,29 @@ export function JazzApp() {
     }
 
     if (spotifyStatus === "connected") {
-      pushToast("Spotify 已連接。");
+      pushToast(copy.toastSpotifyConnected);
     } else if (spotifyStatus === "denied") {
-      pushToast("已取消 Spotify 授權。");
+      pushToast(copy.toastSpotifyDenied);
     } else if (spotifyStatus === "misconfigured") {
-      pushToast("Spotify 連線設定尚未完成。");
+      pushToast(copy.toastSpotifyMisconfigured);
     } else if (spotifyStatus === "error") {
-      pushToast("Spotify 授權未完成。");
+      pushToast(copy.toastSpotifyError);
     }
 
     currentUrl.searchParams.delete("spotify");
     window.history.replaceState({}, "", currentUrl.toString());
-  }, []);
+  }, [copy.toastSpotifyConnected, copy.toastSpotifyDenied, copy.toastSpotifyError, copy.toastSpotifyMisconfigured]);
 
   useEffect(() => {
     if (!isReady) {
       return;
     }
 
-    setFeedByVibe(buildFallbackFeedMap(savedIds, sessionSeed, initialVisiblePicks));
+    setFeedByVibe(buildFallbackFeedMap(savedIds, locale, sessionSeed, initialVisiblePicks));
     setHydratedVibes({});
     rememberedSeedRef.current = null;
     setIsLoadingFeed(false);
-  }, [isReady, sessionSeed, spotifySession.connected, savedIds]);
+  }, [isReady, locale, sessionSeed, spotifySession.connected, savedIds]);
 
   useEffect(() => {
     if (!isReady || rememberedSeedRef.current === sessionSeed) {
@@ -233,14 +270,15 @@ export function JazzApp() {
       if (spotifySession.connected) {
         setIsLoadingFeed(true);
       }
-      const request = buildRecommendationRequest(savedIds, activeVibe, sessionSeed, initialVisiblePicks);
+      const request = buildRecommendationRequest(savedIds, activeVibe, sessionSeed, initialVisiblePicks, locale);
       const query = new URLSearchParams({
         vibe: request.vibe,
         exclude: request.excludeIds.join(","),
         avoid: (request.avoidIds ?? []).join(","),
         rotation: String(request.rotation),
         seed: String(request.seed ?? 0),
-        limit: String(request.limit ?? initialVisiblePicks)
+        limit: String(request.limit ?? initialVisiblePicks),
+        locale: request.locale ?? locale
       });
 
       try {
@@ -286,7 +324,7 @@ export function JazzApp() {
       ignore = true;
       controller.abort();
     };
-  }, [activeVibe, feedByVibe, hydratedVibes, isReady, savedIds, sessionSeed, spotifySession.connected]);
+  }, [activeVibe, feedByVibe, hydratedVibes, isReady, locale, savedIds, sessionSeed, spotifySession.connected]);
 
   useEffect(() => {
     let cancelled = false;
@@ -304,7 +342,7 @@ export function JazzApp() {
 
     const runPrefetch = async () => {
         const requests = pendingVibes.map((vibe) =>
-        buildRecommendationRequest(savedIds, vibe, sessionSeed, initialVisiblePicks)
+          buildRecommendationRequest(savedIds, vibe, sessionSeed, initialVisiblePicks, locale)
       );
 
       try {
@@ -361,14 +399,14 @@ export function JazzApp() {
         clearTimeout(timeoutId);
       }
     };
-  }, [activeVibe, feedByVibe, hydratedVibes, isReady, savedIds, sessionSeed, spotifySession.connected]);
+  }, [activeVibe, feedByVibe, hydratedVibes, isReady, locale, savedIds, sessionSeed, spotifySession.connected]);
 
   function handleToggleSave(pick: JazzPick) {
     setSavedPicks((current) => {
       const exists = current.some((entry) => entry.id === pick.id);
       const nextPicks = exists ? current.filter((entry) => entry.id !== pick.id) : [pick, ...current];
       savePicks(nextPicks);
-      pushToast(exists ? "已從收藏移除。" : "已加入收藏。");
+      pushToast(exists ? copy.toastRemoved : copy.toastSaved);
       return nextPicks;
     });
   }
@@ -378,16 +416,16 @@ export function JazzApp() {
   }
 
   async function handleShareTextLink(pick: JazzPick) {
-    const payload = buildPickSharePayload(pick);
+    const payload = buildPickSharePayload(pick, locale);
     const result = await sharePick(payload);
 
     if (result.status === "shared") {
-      pushToast("已開啟分享。");
+      pushToast(copy.toastShared);
     } else if (result.status === "copied") {
-      pushToast("文字與連結已複製。");
+      pushToast(copy.toastCopied);
     } else {
       const copied = await copyShareText(payload);
-      pushToast(copied.status === "copied" ? "文字與連結已複製。" : "目前無法分享。");
+      pushToast(copied.status === "copied" ? copy.toastCopied : copy.toastShareUnavailable);
     }
 
     setShareTarget(null);
@@ -413,10 +451,16 @@ export function JazzApp() {
         country: null
       }));
       clearStoredSpotifySession();
-      pushToast("已中斷 Spotify 連線。");
+      pushToast(copy.toastDisconnected);
     } catch {
-      pushToast("目前無法中斷 Spotify 連線。");
+      pushToast(copy.toastDisconnectUnavailable);
     }
+  }
+
+  function handleLocaleChange(nextLocale: AppLocale) {
+    setLocale(nextLocale);
+    storeLocale(nextLocale);
+    document.documentElement.lang = nextLocale;
   }
 
   return (
@@ -426,6 +470,7 @@ export function JazzApp() {
         pick={shareTarget}
         onClose={() => setShareTarget(null)}
         onShareTextLink={handleShareTextLink}
+        locale={locale}
       />
       <main className="relative overflow-hidden">
         <div className="ambient ambient-left" />
@@ -437,40 +482,32 @@ export function JazzApp() {
                 Vanguard
               </div>
               <div className="max-w-3xl space-y-5">
-                <p className="text-sm uppercase tracking-[0.3em] text-mist/80">Today&apos;s Jazz Picks</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-mist/80">{copy.heroEyebrow}</p>
                 <h1 className="font-display text-5xl leading-none text-cream sm:text-6xl lg:text-7xl">
-                  今天，先從這張開始。
+                  {copy.heroTitle}
                 </h1>
                 <p className="max-w-2xl text-base leading-7 text-mist sm:text-lg">
-                  先替你收好幾張專輯，讓今天不用從茫茫片海開始。
+                  {copy.heroSubtitle}
                 </p>
               </div>
-              <VibeFilter activeVibe={activeVibe} onChange={setActiveVibe} />
+              <VibeFilter activeVibe={activeVibe} onChange={setActiveVibe} locale={locale} />
             </div>
 
             <aside className="rounded-[32px] border border-white/10 bg-white/[0.05] p-6 shadow-panel backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.24em] text-mist/80">今日方向</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-mist/80">{copy.vibeEyebrow}</p>
               <p className="mt-3 font-display text-3xl text-cream">{activeVibe}</p>
               <p className="mt-4 text-sm leading-7 text-mist">
-                {activeVibe === "Classic" &&
-                  "先回到那些一放下去，整個房間就會安定下來的名盤。"}
-                {activeVibe === "Exploratory" &&
-                  "從熟悉的入口偏一點航線，去聽爵士更野、更開的那一面。"}
-                {activeVibe === "Fusion" &&
-                  "把律動再推深一點，去接住電氣、速度和更鮮明的輪廓。"}
-                {activeVibe === "Late Night" &&
-                  "適合夜深之後播放，聲音不急，情緒卻留得很長。"}
-                {activeVibe === "Focus" &&
-                  "把多餘的噪音先收掉，只留下能陪你往前走的節奏。"}
+                {copy.vibeDescriptions[activeVibe]}
               </p>
               <div className="mt-8 flex items-center justify-between text-sm text-mist">
-                <span>已備好 {feed.picks.length} 張</span>
-                <span>收藏 {savedPicks.length} 張</span>
+                <span>{copy.preparedCount(feed.picks.length)}</span>
+                <span>{copy.savedCounter(savedPicks.length)}</span>
               </div>
               <SpotifyConnectionCard
                 isLoading={isLoadingSpotify}
                 session={spotifySession}
                 onLogout={handleSpotifyLogout}
+                locale={locale}
               />
             </aside>
           </header>
@@ -487,12 +524,12 @@ export function JazzApp() {
               </div>
               <div className="hidden text-right sm:block">
                 <p className="text-xs uppercase tracking-[0.22em] text-mist/80">
-                  {feed.mode === "personalized" ? "依你的聆聽習慣" : "編選起點"}
+                  {feed.mode === "personalized" ? copy.feedModePersonalized : copy.feedModeCurated}
                 </p>
                 {isLoadingFeed ? (
                   <div className="mt-2 inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-mist/70">
                     <VinylSpinner size="sm" />
-                    <span>唱盤轉進中</span>
+                    <span>{copy.loadingFeed}</span>
                   </div>
                 ) : null}
               </div>
@@ -507,6 +544,7 @@ export function JazzApp() {
                   onToggleSave={handleToggleSave}
                   onShare={handleShare}
                   prioritizeImage={index < initialVisiblePicks}
+                  locale={locale}
                 />
               ))}
             </div>
@@ -516,24 +554,48 @@ export function JazzApp() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <h2 id="saved-picks" className="font-display text-3xl text-cream">
-                  收藏
+                  {copy.savedHeading}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-mist">
-                  把想回頭再聽的那張，先留在這裡。
+                  {copy.savedSubtitle}
                 </p>
               </div>
               {isReady ? (
                 <p className="hidden text-xs uppercase tracking-[0.22em] text-mist/80 sm:block">
-                  {savedPicks.length === 0 ? "還沒有留片" : `已留 ${savedPicks.length} 張`}
+                  {savedPicks.length === 0 ? copy.savedCountEmpty : copy.savedCount(savedPicks.length)}
                 </p>
               ) : null}
             </div>
 
-            <SavedPicks picks={savedPicks} onToggleSave={handleToggleSave} onShare={handleShare} />
+            <SavedPicks picks={localizedSavedPicks} onToggleSave={handleToggleSave} onShare={handleShare} locale={locale} />
           </section>
 
-          <footer className="border-t border-white/8 pt-6 text-center text-xs uppercase tracking-[0.22em] text-mist/70">
-            © {new Date().getFullYear()} noesis.studio
+          <footer className="flex flex-col items-center justify-center gap-3 border-t border-white/8 pt-6 text-xs uppercase tracking-[0.22em] text-mist/70 sm:flex-row sm:justify-between">
+            <span>{copy.copyright(new Date().getFullYear())}</span>
+            <div className="flex items-center gap-2" aria-label={copy.languageLabel}>
+              <button
+                type="button"
+                onClick={() => handleLocaleChange("zh-Hant")}
+                className={`rounded-full border px-3 py-1.5 transition ${
+                  locale === "zh-Hant"
+                    ? "border-olive-200 bg-olive-50 text-ink"
+                    : "border-white/10 bg-white/5 text-mist hover:border-white/20 hover:bg-white/10 hover:text-cream"
+                }`}
+              >
+                {copy.chinese}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLocaleChange("en")}
+                className={`rounded-full border px-3 py-1.5 transition ${
+                  locale === "en"
+                    ? "border-olive-200 bg-olive-50 text-ink"
+                    : "border-white/10 bg-white/5 text-mist hover:border-white/20 hover:bg-white/10 hover:text-cream"
+                }`}
+              >
+                {copy.english}
+              </button>
+            </div>
           </footer>
         </section>
       </main>

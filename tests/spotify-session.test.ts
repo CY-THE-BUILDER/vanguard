@@ -80,6 +80,19 @@ describe("spotify session helpers", () => {
     ).toBe("已連接 Miles");
   });
 
+  it("formats the connected label in English when the UI is switched", () => {
+    expect(
+      getSpotifyConnectionLabel(
+        {
+          configured: true,
+          connected: true,
+          displayName: "Miles"
+        },
+        "en"
+      )
+    ).toBe("Connected Miles");
+  });
+
   it("clears the cached session when the user disconnects", () => {
     writeStoredSpotifySession({
       configured: true,

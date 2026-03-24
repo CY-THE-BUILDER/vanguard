@@ -3,15 +3,18 @@
 import Image from "next/image";
 import type { MouseEvent } from "react";
 import { getSpotifyActionUrl, getSpotifyNavigationTarget } from "@/lib/spotify-actions";
-import { JazzPick } from "@/types/jazz";
+import { getUiCopy } from "@/lib/vanguard-i18n";
+import { AppLocale, JazzPick } from "@/types/jazz";
 
 type SavedPicksProps = {
   picks: JazzPick[];
   onToggleSave: (pick: JazzPick) => void;
   onShare: (pick: JazzPick) => void;
+  locale: AppLocale;
 };
 
-export function SavedPicks({ picks, onToggleSave, onShare }: SavedPicksProps) {
+export function SavedPicks({ picks, onToggleSave, onShare, locale }: SavedPicksProps) {
+  const copy = getUiCopy(locale);
   function handleOpenSpotify(
     event: MouseEvent<HTMLAnchorElement>,
     pick: JazzPick
@@ -28,10 +31,8 @@ export function SavedPicks({ picks, onToggleSave, onShare }: SavedPicksProps) {
   if (picks.length === 0) {
     return (
       <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.04] p-8 text-center text-sm leading-7 text-mist">
-        <p className="font-display text-2xl text-cream">收藏</p>
-        <p className="mx-auto mt-3 max-w-xl">
-          還沒有先留住的片刻。等你遇到想回頭再聽一次的那一張，它就會安靜地待在這裡。
-        </p>
+        <p className="font-display text-2xl text-cream">{copy.savedEmptyTitle}</p>
+        <p className="mx-auto mt-3 max-w-xl">{copy.savedEmptyBody}</p>
       </div>
     );
   }
@@ -67,21 +68,21 @@ export function SavedPicks({ picks, onToggleSave, onShare }: SavedPicksProps) {
                 onClick={(event) => handleOpenSpotify(event, pick)}
                 className="rounded-full bg-olive-50 px-3 py-1.5 text-xs font-medium text-ink"
               >
-                前往 Spotify
+                {copy.openSpotify}
               </a>
               <button
                 type="button"
                 onClick={() => onShare(pick)}
                 className="rounded-full border border-white/12 px-3 py-1.5 text-xs text-cream"
               >
-                分享
+                {copy.share}
               </button>
               <button
                 type="button"
                 onClick={() => onToggleSave(pick)}
                 className="rounded-full border border-white/12 px-3 py-1.5 text-xs text-mist"
               >
-                移除
+                {copy.remove}
               </button>
             </div>
           </div>

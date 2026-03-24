@@ -8,6 +8,8 @@ export const vibeOptions = [
 
 export type Vibe = (typeof vibeOptions)[number];
 
+export type AppLocale = "zh-Hant" | "en";
+
 export type JazzPick = {
   id: string;
   title: string;
@@ -58,6 +60,7 @@ export type RecommendationBatchRequest = {
   rotation: number;
   seed?: number;
   limit?: number;
+  locale?: AppLocale;
 };
 
 export type RecommendationBatchResponse = {

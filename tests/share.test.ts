@@ -20,7 +20,7 @@ const pick: JazzPick = {
 
 describe("share helpers", () => {
   it("builds a curator-style payload from a pick", () => {
-    const payload = buildPickSharePayload(pick);
+    const payload = buildPickSharePayload(pick, "zh-Hant");
 
     expect(payload.title).toBe("Kind of Blue · Miles Davis");
     expect(payload.text).toContain("Kind of Blue");
@@ -39,7 +39,7 @@ describe("share helpers", () => {
       share: undefined
     });
 
-    const result = await copyShareText(buildPickSharePayload(pick));
+    const result = await copyShareText(buildPickSharePayload(pick, "zh-Hant"));
 
     expect(result.status).toBe("copied");
     expect(writeText).toHaveBeenCalledWith(
@@ -53,7 +53,7 @@ describe("share helpers", () => {
       share: nativeShare
     });
 
-    const result = await sharePick(buildPickSharePayload(pick));
+    const result = await sharePick(buildPickSharePayload(pick, "zh-Hant"));
 
     expect(result.status).toBe("shared");
     expect(nativeShare).toHaveBeenCalledWith({
@@ -61,5 +61,14 @@ describe("share helpers", () => {
       text: "今天想把《Kind of Blue》留給你。Miles Davis，分寸很穩，也很耐聽，任何時候放下去都能把氣氛安定下來。",
       url: "https://open.spotify.com/album/example"
     });
+  });
+
+  it("builds an English payload with the same editorial warmth", () => {
+    const payload = buildPickSharePayload(pick, "en");
+
+    expect(payload.title).toBe("Kind of Blue · Miles Davis");
+    expect(payload.text).toContain("Wanted to pass Kind of Blue your way.");
+    expect(payload.text).toContain("Measured, enduring");
+    expect(payload.text).not.toContain("最近");
   });
 });

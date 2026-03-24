@@ -4,7 +4,8 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { VinylSpinner } from "@/components/vinyl-spinner";
 import { buildGeneratedCoverArt, isRenderableArtworkUrl } from "@/lib/cover-art";
 import { getSpotifyActionUrl, getSpotifyNavigationTarget } from "@/lib/spotify-actions";
-import { JazzPick } from "@/types/jazz";
+import { getUiCopy } from "@/lib/vanguard-i18n";
+import { AppLocale, JazzPick } from "@/types/jazz";
 
 type RecommendationCardProps = {
   pick: JazzPick;
@@ -12,6 +13,7 @@ type RecommendationCardProps = {
   onToggleSave: (pick: JazzPick) => void;
   onShare: (pick: JazzPick) => void;
   prioritizeImage?: boolean;
+  locale: AppLocale;
 };
 
 export function RecommendationCard({
@@ -19,8 +21,10 @@ export function RecommendationCard({
   isSaved,
   onToggleSave,
   onShare,
-  prioritizeImage = false
+  prioritizeImage = false,
+  locale
 }: RecommendationCardProps) {
+  const copy = getUiCopy(locale);
   const spotifyHref = getSpotifyActionUrl(pick);
   const placeholderImage = pick.placeholderImageUrl || buildGeneratedCoverArt(pick.title, pick.artist, pick.accentColor);
   const actualImage =
@@ -113,7 +117,7 @@ export function RecommendationCard({
         >
           <div className="flex flex-col items-center gap-3 text-center">
             <VinylSpinner size="lg" />
-            <p className="text-xs uppercase tracking-[0.24em] text-mist/80">唱盤就位中</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-mist/80">{copy.loadingCover}</p>
           </div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
@@ -124,7 +128,7 @@ export function RecommendationCard({
           <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.22em] text-mist/80">
             {pick.source === "spotify" ? (
               <span className="rounded-full border border-olive-100/30 bg-olive-100/10 px-2.5 py-1 text-olive-50">
-                來自你的 Spotify
+                {copy.spotifySource}
               </span>
             ) : null}
             <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
@@ -159,14 +163,14 @@ export function RecommendationCard({
             onClick={handleOpenSpotify}
             className="rounded-full bg-olive-50 px-4 py-2 text-sm font-medium text-ink transition hover:bg-olive-100"
           >
-            前往 Spotify
+            {copy.openSpotify}
           </a>
           <button
             type="button"
             onClick={() => onShare(pick)}
             className="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-cream transition hover:bg-white/10"
           >
-            分享
+            {copy.share}
           </button>
           <button
             type="button"
@@ -178,7 +182,7 @@ export function RecommendationCard({
                 : "border-white/12 bg-transparent text-mist hover:bg-white/5 hover:text-cream"
             }`}
           >
-            {isSaved ? "已收藏" : "收藏"}
+            {isSaved ? copy.saved : copy.save}
           </button>
         </div>
       </div>

@@ -28,9 +28,14 @@ import {
 } from "@/lib/spotify-recommendations";
 import { hydratePublicArtworkForPick, isRenderableArtworkUrl } from "@/lib/cover-art";
 import { ensureUniqueFeeds } from "@/lib/recommendation-feeds";
-import { JazzPick, RecommendationBatchRequest, RecommendationBatchResponse, RecommendationFeed, vibeOptions, Vibe } from "@/types/jazz";
+import { localizePick } from "@/lib/vanguard-i18n";
+import { AppLocale, JazzPick, RecommendationBatchRequest, RecommendationBatchResponse, RecommendationFeed, vibeOptions, Vibe } from "@/types/jazz";
 
 export const dynamic = "force-dynamic";
+
+function parseLocale(value: string | null | undefined): AppLocale {
+  return value === "en" ? "en" : "zh-Hant";
+}
 
 type PagingResponse<T> = {
   items: T[];
@@ -194,7 +199,7 @@ async function hydrateCuratedPick(accessToken: string, pick: JazzPick) {
     }
 
     const sourceArtist = track.artists[0];
-    return buildTrackPick(track, sourceArtist, pick.vibeTags[0], "search");
+    return buildTrackPick(track, sourceArtist, pick.vibeTags[0], "search", pick.recommendationReason);
   }
 
   const album = response.albums?.items[0];
@@ -203,7 +208,7 @@ async function hydrateCuratedPick(accessToken: string, pick: JazzPick) {
   }
 
   const sourceArtist = album.artists?.[0] ?? { id: "unknown", name: pick.artist, genres: [] };
-  return buildAlbumPick(album, sourceArtist, pick.vibeTags[0], "search");
+  return buildAlbumPick(album, sourceArtist, pick.vibeTags[0], "search", pick.recommendationReason);
 }
 
 async function buildSearchDrivenPicks(
@@ -211,7 +216,8 @@ async function buildSearchDrivenPicks(
   activeVibe: JazzPick["vibeTags"][number],
   seedArtists: SpotifyArtistEntity[],
   excludedAlbumIds: Set<string>,
-  tasteProfile: ListenerTasteProfile
+  tasteProfile: ListenerTasteProfile,
+  locale: AppLocale
 ) {
   const searchResults = await Promise.all(
     seedArtists.slice(0, 4).map(async (artist) => {
@@ -258,7 +264,8 @@ async function buildSearchDrivenPicks(
                 activeVibe,
                 tasteProfile,
                 sourceArtistName: artist.name,
-                origin: "search"
+                origin: "search",
+                locale
               })
             );
           });
@@ -284,7 +291,8 @@ async function buildCuratedResponseForVibe(
   accessToken?: string | null,
   limit = 5,
   seed = 0,
-  avoidIds: string[] = []
+  avoidIds: string[] = [],
+  locale: AppLocale = "zh-Hant"
 ) {
   const hydratedCurated = await Promise.all(
     getCuratedPicksForVibe(vibe, {
@@ -293,9 +301,11 @@ async function buildCuratedResponseForVibe(
       rotation,
       seed,
       avoidIds
-    }).map((pick) =>
+    })
+      .map((pick) => localizePick(pick, locale))
+      .map((pick) =>
       accessToken ? hydrateCuratedPick(accessToken, pick) : hydratePublicArtworkForPick(pick)
-    )
+      )
   );
 
   const selected = hydratedCurated.slice(0, limit);
@@ -304,7 +314,7 @@ async function buildCuratedResponseForVibe(
     .filter((pick) => !selected.some((entry) => entry.id === pick.id))
     .slice(0, Math.max(limit, 6));
 
-  return buildCuratedFeed(vibe, selected, reservePicks);
+  return buildCuratedFeed(vibe, selected, reservePicks, locale);
 }
 
 async function hydrateMissingArtwork(picks: JazzPick[]) {
@@ -350,7 +360,8 @@ function buildSignalDrivenPicks(
   topTracks: SpotifyTrackEntity[],
   recentlyPlayed: SpotifyTrackEntity[],
   savedTracks: SpotifyTrackEntity[],
-  tasteProfile: ListenerTasteProfile
+  tasteProfile: ListenerTasteProfile,
+  locale: AppLocale
 ) {
   const topArtistMap = new Map(topArtists.map((artist) => [artist.id, artist]));
   const candidates = [
@@ -385,7 +396,8 @@ function buildSignalDrivenPicks(
               sourceArtistName: sourceArtist.name,
               origin,
               sourceTrackTitle: track.name,
-              sourceAlbumTitle: track.album.name
+              sourceAlbumTitle: track.album.name,
+              locale
             })
           ),
           allowed:
@@ -428,11 +440,12 @@ async function buildFeedForVibe(params: {
   avoidIds?: string[];
   accessToken?: string | null;
   listenerData?: ListenerData | null;
+  locale: AppLocale;
 }): Promise<RecommendationFeed> {
-  const { vibe, excludedIds, rotation, seed, limit, avoidIds = [], accessToken, listenerData } = params;
+  const { vibe, excludedIds, rotation, seed, limit, avoidIds = [], accessToken, listenerData, locale } = params;
 
   if (!accessToken || !listenerData) {
-    return buildCuratedResponseForVibe(vibe, excludedIds, rotation, null, limit, seed, avoidIds);
+    return buildCuratedResponseForVibe(vibe, excludedIds, rotation, null, limit, seed, avoidIds, locale);
   }
 
   const { topArtists, topTracks, recentlyPlayed, savedTracks, tasteProfile } = listenerData;
@@ -458,7 +471,8 @@ async function buildFeedForVibe(params: {
     vibe,
     seedArtists,
     excludedAlbumIds,
-    tasteProfile
+    tasteProfile,
+    locale
   );
   const signalPicks = buildSignalDrivenPicks(
     vibe,
@@ -466,7 +480,8 @@ async function buildFeedForVibe(params: {
     topTracks,
     recentlyPlayed,
     savedTracks,
-    tasteProfile
+    tasteProfile,
+    locale
   );
   const allPersonalizedCandidates = rankPicksForVibeWithSeed(
     [...searchedPicks, ...signalPicks],
@@ -504,11 +519,15 @@ async function buildFeedForVibe(params: {
     return finalizeFeedArtwork(
       {
       mode: "personalized",
-      headline: "順著你最近的耳朵走",
+      headline: locale === "en" ? "Follow where your ear has been" : "順著你最近的耳朵走",
       note:
-        seedNames.length > 0
-          ? `這一輪順著 ${seedNames.join("、")} 附近的氣味往外展開，先替你留幾張更貼近 ${vibe} 的專輯。`
-          : `先照著你最近的聽感往前推一步，替你留幾張更貼近 ${vibe} 的專輯。`,
+        locale === "en"
+          ? seedNames.length > 0
+            ? `This round drifts outward from the atmosphere around ${seedNames.join(", ")}, leaving you a few records that sit closer to ${vibe}.`
+            : `This round starts from the sound you've been living with lately and leaves you a few records that sit closer to ${vibe}.`
+          : seedNames.length > 0
+            ? `這一輪順著 ${seedNames.join("、")} 附近的氣味往外展開，先替你留幾張更貼近 ${vibe} 的專輯。`
+            : `先照著你最近的聽感往前推一步，替你留幾張更貼近 ${vibe} 的專輯。`,
       picks: personalizedPicks,
       reservePicks
       },
@@ -516,11 +535,12 @@ async function buildFeedForVibe(params: {
     );
   }
 
-  return buildCuratedResponseForVibe(vibe, excludedIds, rotation, accessToken, limit, seed, avoidIds);
+  return buildCuratedResponseForVibe(vibe, excludedIds, rotation, accessToken, limit, seed, avoidIds, locale);
 }
 
 export async function GET(request: NextRequest) {
   const vibe = parseVibe(request.nextUrl.searchParams.get("vibe"));
+  const locale = parseLocale(request.nextUrl.searchParams.get("locale"));
   const excludedIds = new Set(
     (request.nextUrl.searchParams.get("exclude") ?? "")
       .split(",")
@@ -542,17 +562,18 @@ export async function GET(request: NextRequest) {
       excludedIds,
       rotation,
       seed,
-      limit,
-      avoidIds,
-      accessToken,
-      listenerData
-    });
+        limit,
+        avoidIds,
+        accessToken,
+        listenerData,
+        locale
+      });
 
     return NextResponse.json(feed, {
       headers: { "Cache-Control": "no-store" }
     });
   } catch {
-    const feed = await buildCuratedResponseForVibe(vibe, excludedIds, rotation, null, limit, seed, avoidIds);
+    const feed = await buildCuratedResponseForVibe(vibe, excludedIds, rotation, null, limit, seed, avoidIds, locale);
     return NextResponse.json(feed, {
       headers: { "Cache-Control": "no-store" }
     });
@@ -571,7 +592,8 @@ export async function POST(request: NextRequest) {
       avoidIds: entry.avoidIds ?? [],
       rotation: entry.rotation ?? 0,
       seed: entry.seed ?? 0,
-      limit: entry.limit ?? 5
+      limit: entry.limit ?? 5,
+      locale: parseLocale(entry.locale)
     }));
 
   if (requests.length === 0) {
@@ -595,7 +617,8 @@ export async function POST(request: NextRequest) {
         limit: Math.max(1, Math.min(8, entry.limit ?? 5)),
         avoidIds: entry.avoidIds,
         accessToken,
-        listenerData
+        listenerData,
+        locale: entry.locale
       });
 
       feeds[entry.vibe] = feed;
@@ -632,7 +655,8 @@ export async function POST(request: NextRequest) {
         null,
         Math.max(1, Math.min(8, entry.limit ?? 5)),
         entry.seed ?? 0,
-        entry.avoidIds
+        entry.avoidIds,
+        entry.locale
       );
 
       feeds[entry.vibe] = feed;

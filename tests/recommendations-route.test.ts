@@ -264,6 +264,21 @@ describe("recommendations route", () => {
     expect(payload.picks.every((pick: { imageUrl?: string }) => typeof pick.imageUrl === "string" && pick.imageUrl.length > 0)).toBe(true);
   });
 
+  it("returns English editorial feed copy when locale=en is requested", async () => {
+    mockGetValidSpotifyAccessToken.mockResolvedValue(null);
+
+    const { GET } = await import("@/app/api/jazz/recommendations/route");
+    const request = new NextRequest(
+      "https://vanguard.noesis.studio/api/jazz/recommendations?vibe=Classic&limit=3&locale=en"
+    );
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(payload.mode).toBe("curated");
+    expect(payload.headline).toBe("Put the classics into today first");
+    expect(payload.note).toContain("balance never wavers");
+  });
+
   it("does not collapse the whole request to curated when Spotify search fails for one query", async () => {
     mockGetValidSpotifyAccessToken.mockResolvedValue("token");
     mockSpotifyGet.mockImplementation(async (_token: string, path: string, searchParams?: Record<string, string | number | undefined>) => {

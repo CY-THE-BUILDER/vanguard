@@ -1,15 +1,19 @@
 "use client";
 
-import { Vibe, vibeOptions } from "@/types/jazz";
+import { getUiCopy } from "@/lib/vanguard-i18n";
+import { AppLocale, Vibe, vibeOptions } from "@/types/jazz";
 
 type VibeFilterProps = {
   activeVibe: Vibe;
   onChange: (vibe: Vibe) => void;
+  locale: AppLocale;
 };
 
-export function VibeFilter({ activeVibe, onChange }: VibeFilterProps) {
+export function VibeFilter({ activeVibe, onChange, locale }: VibeFilterProps) {
+  const copy = getUiCopy(locale);
+
   return (
-    <div className="flex flex-wrap gap-2" aria-label="Jazz vibe filter" role="tablist">
+    <div className="flex flex-wrap gap-2" aria-label={copy.heroEyebrow} role="tablist">
       {vibeOptions.map((vibe) => {
         const isActive = vibe === activeVibe;
 

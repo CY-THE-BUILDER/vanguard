@@ -1,4 +1,5 @@
-import { SpotifySession } from "@/types/jazz";
+import { getUiCopy } from "@/lib/vanguard-i18n";
+import { AppLocale, SpotifySession } from "@/types/jazz";
 
 const SPOTIFY_SESSION_KEY = "vanguard-spotify-session";
 
@@ -79,9 +80,9 @@ export function clearStoredSpotifySession() {
   window.localStorage.removeItem(SPOTIFY_SESSION_KEY);
 }
 
-export function getSpotifyConnectionLabel(session: SpotifySession) {
+export function getSpotifyConnectionLabel(session: SpotifySession, locale: AppLocale = "zh-Hant") {
   const displayName = sanitizeDisplayName(session.displayName);
-  return displayName ? `已連接 ${displayName}` : "已連接 Spotify";
+  return getUiCopy(locale).spotifyConnectedLabel(displayName);
 }
 
 export function getSpotifyConnectionActions(session: SpotifySession) {
