@@ -50,7 +50,7 @@ describe("spotify session helpers", () => {
     );
 
     expect(normalized.displayName).toBe("Hank.t");
-    expect(getSpotifyConnectionLabel(normalized)).toBe("已連接（Hank.t）");
+    expect(getSpotifyConnectionLabel(normalized)).toBe("已連接 Hank.t");
   });
 
   it("only exposes the disconnect action once Spotify is connected", () => {

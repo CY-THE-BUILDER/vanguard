@@ -9,6 +9,7 @@ import { Toasts } from "@/components/toast";
 import { VinylSpinner } from "@/components/vinyl-spinner";
 import { VibeFilter } from "@/components/vibe-filter";
 import { getCuratedPicksForVibe } from "@/data/jazz-picks";
+import { ensureUniqueFeeds } from "@/lib/recommendation-feeds";
 import { getSavedPicks, savePicks } from "@/lib/jazz-storage";
 import {
   createRecommendationSessionSeed,
@@ -44,7 +45,7 @@ const defaultVibe: Vibe = "Classic";
 const initialVisiblePicks = 3;
 const fullVisiblePicks = 5;
 
-function buildFallbackFeedMap(savedIds: Set<string>, seed = 0, limit = initialVisiblePicks) {
+  function buildFallbackFeedMap(savedIds: Set<string>, seed = 0, limit = initialVisiblePicks) {
   const reservedIds = new Set<string>([...savedIds, ...getGlobalRecommendationIds()]);
   const feeds = {} as Record<Vibe, RecommendationFeed>;
 
@@ -64,7 +65,7 @@ function buildFallbackFeedMap(savedIds: Set<string>, seed = 0, limit = initialVi
     });
   }
 
-  return feeds;
+  return ensureUniqueFeeds(feeds, { savedIds, seed }) as Record<Vibe, RecommendationFeed>;
 }
 
 function getCrossVibeExcludedIds(vibe: Vibe, feedByVibe: Partial<Record<Vibe, RecommendationFeed>>) {
@@ -263,9 +264,14 @@ export function JazzApp() {
         const nextFeed = (await response.json()) as RecommendationFeed;
         if (!ignore) {
           setFeedByVibe((current) => ({
-            ...current,
-            [activeVibe]: nextFeed
-          }));
+            ...ensureUniqueFeeds(
+              {
+                ...current,
+                [activeVibe]: nextFeed
+              },
+              { savedIds, seed: sessionSeed }
+            )
+          } as Record<Vibe, RecommendationFeed>));
           setHydratedVibes((current) => ({
             ...current,
             [activeVibe]: true
@@ -321,9 +327,14 @@ export function JazzApp() {
         const nextFeed = (await response.json()) as RecommendationFeed;
         if (!ignore) {
           setFeedByVibe((current) => ({
-            ...current,
-            [activeVibe]: nextFeed
-          }));
+            ...ensureUniqueFeeds(
+              {
+                ...current,
+                [activeVibe]: nextFeed
+              },
+              { savedIds, seed: sessionSeed }
+            )
+          } as Record<Vibe, RecommendationFeed>));
           setExpandedVibes((current) => ({
             ...current,
             [activeVibe]: true
@@ -380,9 +391,14 @@ export function JazzApp() {
         const payload = (await response.json()) as RecommendationBatchResponse;
         if (!cancelled) {
           setFeedByVibe((current) => ({
-            ...current,
-            ...payload.feeds
-          }));
+            ...ensureUniqueFeeds(
+              {
+                ...current,
+                ...payload.feeds
+              },
+              { savedIds, seed: sessionSeed }
+            )
+          } as Record<Vibe, RecommendationFeed>));
           setHydratedVibes((current) => ({
             ...current,
             ...Object.fromEntries(pendingVibes.map((vibe) => [vibe, true]))

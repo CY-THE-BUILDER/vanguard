@@ -81,7 +81,7 @@ export function clearStoredSpotifySession() {
 
 export function getSpotifyConnectionLabel(session: SpotifySession) {
   const displayName = sanitizeDisplayName(session.displayName);
-  return displayName ? `已連接（${displayName}）` : "已連接 Spotify";
+  return displayName ? `已連接 ${displayName}` : "已連接 Spotify";
 }
 
 export function getSpotifyConnectionActions(session: SpotifySession) {
