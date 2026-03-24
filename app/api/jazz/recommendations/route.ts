@@ -26,7 +26,7 @@ import {
   SpotifyTrackEntity,
   vibeProfiles
 } from "@/lib/spotify-recommendations";
-import { hydratePublicArtworkForPick } from "@/lib/cover-art";
+import { hydratePublicArtworkForPick, isRenderableArtworkUrl } from "@/lib/cover-art";
 import { JazzPick, RecommendationBatchRequest, RecommendationBatchResponse, RecommendationFeed, vibeOptions, Vibe } from "@/types/jazz";
 
 export const dynamic = "force-dynamic";
@@ -302,6 +302,43 @@ async function buildCuratedResponseForVibe(
   return buildCuratedFeed(vibe, selected, reservePicks);
 }
 
+async function hydrateMissingArtwork(picks: JazzPick[]) {
+  return Promise.all(
+    picks.map((pick) =>
+      isRenderableArtworkUrl(pick.imageUrl)
+        ? Promise.resolve(pick)
+        : hydratePublicArtworkForPick({
+            ...pick,
+            artworkSourceUrl: pick.artworkSourceUrl ?? pick.spotifyUrl
+          })
+    )
+  );
+}
+
+async function finalizeFeedArtwork(feed: RecommendationFeed, limit: number) {
+  const picks = await hydrateMissingArtwork(feed.picks);
+  const reservePicks = await hydrateMissingArtwork(feed.reservePicks ?? []);
+
+  const nextPicks = [...picks];
+  const nextReserve = reservePicks.filter(
+    (pick) => !nextPicks.some((entry) => entry.id === pick.id)
+  );
+
+  for (const pick of nextReserve) {
+    if (nextPicks.length >= limit) {
+      break;
+    }
+
+    nextPicks.push(pick);
+  }
+
+  return {
+    ...feed,
+    picks: nextPicks.slice(0, limit),
+    reservePicks: nextReserve
+  };
+}
+
 function buildSignalDrivenPicks(
   activeVibe: JazzPick["vibeTags"][number],
   topArtists: SpotifyArtistEntity[],
@@ -458,7 +495,8 @@ async function buildFeedForVibe(params: {
       new Set(personalizedPicks.map((pick) => pick.seedArtist).filter(Boolean))
     ).slice(0, 3);
 
-    return {
+    return finalizeFeedArtwork(
+      {
       mode: "personalized",
       headline: "順著你最近的耳朵走",
       note:
@@ -467,7 +505,9 @@ async function buildFeedForVibe(params: {
           : `先照著你最近的聽感往前推一步，替你留幾張更貼近 ${vibe} 的專輯。`,
       picks: personalizedPicks,
       reservePicks
-    };
+      },
+      limit
+    );
   }
 
   return buildCuratedResponseForVibe(vibe, excludedIds, rotation, accessToken, limit, seed);
