@@ -127,6 +127,47 @@ describe("public artwork hydration", () => {
     expect(buildItunesArtworkSearchUrl(trackPick)).toContain("entity=song");
   });
 
+  it("retries iTunes artwork lookup with the album title when the exact search misses", async () => {
+    const albumPick = jazzPicks.find((pick) => pick.id === "light-as-a-feather");
+    if (!albumPick) {
+      throw new Error("Expected Light as a Feather in curated picks.");
+    }
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.startsWith("https://itunes.apple.com/search")) {
+        const parsed = new URL(url);
+        const term = parsed.searchParams.get("term");
+
+        if (term === "Light as a Feather Return to Forever") {
+          return jsonResponse({ results: [] });
+        }
+
+        if (term === "Light as a Feather") {
+          return jsonResponse({
+            results: [
+              {
+                collectionName: "Light as a Feather",
+                artistName: "Chick Corea & Return to Forever",
+                artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music116/100x100bb.jpg"
+              }
+            ]
+          });
+        }
+      }
+
+      return jsonResponse({}, false);
+    });
+
+    const artwork = await fetchItunesArtwork(albumPick, fetchMock as typeof fetch);
+
+    expect(artwork).toBe(
+      "https://is1-ssl.mzstatic.com/image/thumb/Music116/600x600bb.jpg"
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("downgrades invalid exact album links to a stable Spotify search url instead of shipping a dead album page", async () => {
     const albumPick = {
       ...jazzPicks[0],

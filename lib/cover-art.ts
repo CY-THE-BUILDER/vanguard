@@ -140,13 +140,27 @@ function isSpotifyAlbumUrl(url: string) {
 }
 
 export function buildItunesArtworkSearchUrl(pick: JazzPick) {
-  const term = `${pick.title} ${pick.artist}`;
-  const entity = pick.type === "track" ? "song" : "album";
+  return buildItunesArtworkSearchUrlForTerm(
+    `${pick.title} ${pick.artist}`,
+    pick.type
+  );
+}
+
+function buildItunesArtworkSearchUrlForTerm(
+  term: string,
+  type: JazzPick["type"]
+) {
+  const entity = type === "track" ? "song" : "album";
   return `https://itunes.apple.com/search?media=music&entity=${entity}&limit=5&term=${encodeURIComponent(term)}`;
 }
 
-export async function fetchItunesArtwork(pick: JazzPick, fetchImpl: FetchLike = fetch) {
-  const response = await fetchImpl(buildItunesArtworkSearchUrl(pick), {
+async function fetchItunesArtworkForTerm(
+  pick: JazzPick,
+  term: string,
+  minScore: number,
+  fetchImpl: FetchLike = fetch
+) {
+  const response = await fetchImpl(buildItunesArtworkSearchUrlForTerm(term, pick.type), {
     cache: "force-cache"
   });
 
@@ -160,11 +174,26 @@ export async function fetchItunesArtwork(pick: JazzPick, fetchImpl: FetchLike = 
       .map((entry) => ({ entry, score: scoreItunesResult(pick, entry) }))
       .sort((left, right) => right.score - left.score)[0]?.entry ?? null;
 
-  if (!result?.artworkUrl100 || scoreItunesResult(pick, result) < 4) {
+  if (!result?.artworkUrl100 || scoreItunesResult(pick, result) < minScore) {
     return null;
   }
 
   return upscaleItunesArtwork(result.artworkUrl100);
+}
+
+export async function fetchItunesArtwork(pick: JazzPick, fetchImpl: FetchLike = fetch) {
+  const exactArtwork = await fetchItunesArtworkForTerm(
+    pick,
+    `${pick.title} ${pick.artist}`,
+    4,
+    fetchImpl
+  );
+
+  if (exactArtwork) {
+    return exactArtwork;
+  }
+
+  return fetchItunesArtworkForTerm(pick, pick.title, 3, fetchImpl);
 }
 
 export async function hydratePublicArtworkForPick(
