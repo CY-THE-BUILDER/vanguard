@@ -78,11 +78,12 @@ export function ensureUniqueFeeds(
           limit: targetLength * 4,
           seed: seed + index,
           avoidIds: recentIds,
-          excludeIds: new Set([
+          hardExcludeIds: new Set([
             ...savedIds,
             ...reservedIds,
             ...selected.map((pick) => pick.id)
-          ])
+          ]),
+          softExcludeIds: new Set(recentIds)
         });
 
         for (const pick of fallback) {
@@ -113,11 +114,12 @@ export function ensureUniqueFeeds(
         seed: seed + index + 53,
         rotation: seed + index + 1,
         avoidIds: recentIds,
-        excludeIds: new Set([
+        hardExcludeIds: new Set([
           ...savedIds,
           ...reservedIds,
           ...selected.map((pick) => pick.id)
-        ])
+        ]),
+        softExcludeIds: new Set(recentIds)
       });
 
       for (const alternate of alternatePicks) {

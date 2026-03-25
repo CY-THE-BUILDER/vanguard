@@ -208,4 +208,28 @@ describe("curated jazz picks", () => {
     expect(shelf).not.toContain("blue-train");
     expect(shelf[0]).toBeDefined();
   });
+
+  it("never reuses hard-excluded saved albums when falling back to older shelves", () => {
+    const savedIds = new Set([
+      "kind-of-blue",
+      "blue-train",
+      "somethin-else",
+      "moanin",
+      "time-out"
+    ]);
+    const shelf = getCuratedPicksForVibe("Classic", {
+      limit: 5,
+      hardExcludeIds: savedIds,
+      softExcludeIds: new Set([
+        "sunday-at-the-village-vanguard",
+        "saxophone-colossus",
+        "mingus-ah-um",
+        "the-sidewinder",
+        "getz-gilberto"
+      ])
+    }).map((pick) => pick.id);
+
+    expect(shelf).toHaveLength(5);
+    expect(shelf.every((id) => !savedIds.has(id))).toBe(true);
+  });
 });

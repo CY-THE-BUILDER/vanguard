@@ -109,4 +109,47 @@ describe("recommendation history", () => {
       rememberRecommendationBatch(uniqueFeeds);
     }
   });
+
+  it("keeps replenishing shelves across 50 saved visits without resurfacing saved albums", () => {
+    const savedIds = new Set<string>();
+
+    for (let visit = 0; visit < 50; visit += 1) {
+      const seed = createRecommendationSessionSeed();
+      const globalRecentIds = new Set<string>(getGlobalRecommendationIds());
+      const batchReservedIds = new Set<string>();
+      const feeds = Object.fromEntries(
+        vibeOptions.map((vibe) => {
+          const softExcludeIds = new Set([...globalRecentIds, ...getRecentRecommendationIds(vibe)]);
+          const picks = getCuratedPicksForVibe(vibe, {
+            limit: 5,
+            seed,
+            rotation: getRecommendationRotation(vibe),
+            hardExcludeIds: new Set([...savedIds, ...batchReservedIds]),
+            softExcludeIds,
+            avoidIds: getRecentRecommendationIds(vibe)
+          });
+
+          picks.forEach((pick) => batchReservedIds.add(pick.id));
+          return [vibe, buildCuratedFeed(vibe, picks)];
+        })
+      );
+
+      const uniqueFeeds = ensureUniqueFeeds(feeds, { seed, savedIds });
+      const allIds = vibeOptions.flatMap((vibe) => uniqueFeeds[vibe]?.picks.map((pick) => pick.id) ?? []);
+
+      expect(allIds).toHaveLength(25);
+      expect(new Set(allIds).size).toBe(25);
+      expect(allIds.every((id) => !savedIds.has(id))).toBe(true);
+
+      const savedVibe = vibeOptions[visit % vibeOptions.length];
+      const savedPick = uniqueFeeds[savedVibe]?.picks[0];
+      expect(savedPick).toBeDefined();
+
+      if (savedPick) {
+        savedIds.add(savedPick.id);
+      }
+
+      rememberRecommendationBatch(uniqueFeeds);
+    }
+  });
 });

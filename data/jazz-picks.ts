@@ -939,6 +939,510 @@ export const jazzPicks: JazzPick[] = [
       source: "curated"
     },
     { bg: "#141513", glow: "#40433d", accent: "#a7b19d", text: "#f1eee6" }
+  ),
+  withCover(
+    {
+      id: "milestones",
+      title: "Milestones",
+      artist: "Miles Davis",
+      type: "album",
+      subgenre: "Modal Jazz",
+      vibeTags: ["Classic"],
+      recommendationReason: "不需要太多鋪陳，整張一下去，秩序和張力就都在對的位置。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Milestones", artist: "Miles Davis", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Milestones", artist: "Miles Davis", type: "album" }),
+      year: 1958,
+      durationLabel: "38 min",
+      accentColor: "#b59768",
+      source: "curated"
+    },
+    { bg: "#17130f", glow: "#56422f", accent: "#caa36f", text: "#f4ebdf" }
+  ),
+  withCover(
+    {
+      id: "portrait-in-jazz",
+      title: "Portrait in Jazz",
+      artist: "Bill Evans Trio",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Classic"],
+      recommendationReason: "鋼琴的步伐輕，重心卻穩，像一張永遠知道怎麼把房間收好的專輯。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Portrait in Jazz", artist: "Bill Evans Trio", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Portrait in Jazz", artist: "Bill Evans Trio", type: "album" }),
+      year: 1960,
+      durationLabel: "40 min",
+      accentColor: "#9f9079",
+      source: "curated"
+    },
+    { bg: "#161513", glow: "#474136", accent: "#b4a182", text: "#f2eee5" }
+  ),
+  withCover(
+    {
+      id: "brilliant-corners",
+      title: "Brilliant Corners",
+      artist: "Thelonious Monk",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Classic"],
+      recommendationReason: "棱角清楚，落點卻很準，那種只屬於經典名盤的分寸感全在裡面。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Brilliant Corners", artist: "Thelonious Monk", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Brilliant Corners", artist: "Thelonious Monk", type: "album" }),
+      year: 1957,
+      durationLabel: "42 min",
+      accentColor: "#b17f61",
+      source: "curated"
+    },
+    { bg: "#17110f", glow: "#4f3129", accent: "#cb8f6a", text: "#f5e8df" }
+  ),
+  withCover(
+    {
+      id: "soul-station",
+      title: "Soul Station",
+      artist: "Hank Mobley",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Classic"],
+      recommendationReason: "溫度、彈性、俐落感都對得剛剛好，是很容易讓一天穩下來的一張。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Soul Station", artist: "Hank Mobley", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Soul Station", artist: "Hank Mobley", type: "album" }),
+      year: 1960,
+      durationLabel: "37 min",
+      accentColor: "#aa875b",
+      source: "curated"
+    },
+    { bg: "#17120e", glow: "#4e3927", accent: "#c89b61", text: "#f4ebdf" }
+  ),
+  withCover(
+    {
+      id: "clifford-brown-and-max-roach",
+      title: "Clifford Brown and Max Roach",
+      artist: "Clifford Brown & Max Roach",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Classic"],
+      recommendationReason: "氣口明亮，推進俐落，放下去就知道老派硬派的漂亮在哪裡。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Clifford Brown and Max Roach", artist: "Clifford Brown & Max Roach", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Clifford Brown and Max Roach", artist: "Clifford Brown & Max Roach", type: "album" }),
+      year: 1954,
+      durationLabel: "39 min",
+      accentColor: "#b87853",
+      source: "curated"
+    },
+    { bg: "#18120e", glow: "#563126", accent: "#d48d60", text: "#f4e8de" }
+  ),
+  withCover(
+    {
+      id: "contours",
+      title: "Contours",
+      artist: "Sam Rivers",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory"],
+      recommendationReason: "它不把線條說滿，反而讓每一次偏移都留下更長的回味。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Contours", artist: "Sam Rivers", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Contours", artist: "Sam Rivers", type: "album" }),
+      year: 1965,
+      durationLabel: "40 min",
+      accentColor: "#9aa07d",
+      source: "curated"
+    },
+    { bg: "#141511", glow: "#404335", accent: "#b4ba8b", text: "#f2efe4" }
+  ),
+  withCover(
+    {
+      id: "the-real-mccoy",
+      title: "The Real McCoy",
+      artist: "McCoy Tyner",
+      type: "album",
+      subgenre: "Modal Jazz",
+      vibeTags: ["Exploratory"],
+      recommendationReason: "張力從不直接爆開，而是沿著鋼琴和鼓的縫一路向外延伸。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "The Real McCoy", artist: "McCoy Tyner", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "The Real McCoy", artist: "McCoy Tyner", type: "album" }),
+      year: 1967,
+      durationLabel: "40 min",
+      accentColor: "#a08d6a",
+      source: "curated"
+    },
+    { bg: "#15130f", glow: "#48392d", accent: "#bea275", text: "#f4ece1" }
+  ),
+  withCover(
+    {
+      id: "evolution",
+      title: "Evolution",
+      artist: "Grachan Moncur III",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory"],
+      recommendationReason: "不靠炫技，把空間拉開後，聲音自己會往更深的地方走。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Evolution", artist: "Grachan Moncur III", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Evolution", artist: "Grachan Moncur III", type: "album" }),
+      year: 1963,
+      durationLabel: "39 min",
+      accentColor: "#8a9379",
+      source: "curated"
+    },
+    { bg: "#141411", glow: "#384036", accent: "#a1b08d", text: "#f0efe7" }
+  ),
+  withCover(
+    {
+      id: "unit-structures",
+      title: "Unit Structures",
+      artist: "Cecil Taylor",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Exploratory"],
+      recommendationReason: "不是為了舒服，而是為了把耳朵往更遠的地方帶過去。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Unit Structures", artist: "Cecil Taylor", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Unit Structures", artist: "Cecil Taylor", type: "album" }),
+      year: 1966,
+      durationLabel: "41 min",
+      accentColor: "#8f826f",
+      source: "curated"
+    },
+    { bg: "#141210", glow: "#3c342e", accent: "#a99a83", text: "#f1ebe2" }
+  ),
+  withCover(
+    {
+      id: "inner-mounting-flame",
+      title: "The Inner Mounting Flame",
+      artist: "Mahavishnu Orchestra",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion"],
+      recommendationReason: "速度和密度都往前衝，整張像帶電的骨架一路向外撐開。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "The Inner Mounting Flame", artist: "Mahavishnu Orchestra", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "The Inner Mounting Flame", artist: "Mahavishnu Orchestra", type: "album" }),
+      year: 1971,
+      durationLabel: "45 min",
+      accentColor: "#83a4b7",
+      source: "curated"
+    },
+    { bg: "#101518", glow: "#284a58", accent: "#9bc1d7", text: "#eef4f6" }
+  ),
+  withCover(
+    {
+      id: "spectrum",
+      title: "Spectrum",
+      artist: "Billy Cobham",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion"],
+      recommendationReason: "鼓和電聲像齒輪一樣咬緊，往前的推力非常乾脆。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Spectrum", artist: "Billy Cobham", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Spectrum", artist: "Billy Cobham", type: "album" }),
+      year: 1973,
+      durationLabel: "40 min",
+      accentColor: "#72a0af",
+      source: "curated"
+    },
+    { bg: "#101619", glow: "#244750", accent: "#89bdcc", text: "#eef4f6" }
+  ),
+  withCover(
+    {
+      id: "mr-hands",
+      title: "Mr. Hands",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion"],
+      recommendationReason: "律動更滑，電子質地更近，適合把身體和注意力一起往前推。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Mr. Hands", artist: "Herbie Hancock", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Mr. Hands", artist: "Herbie Hancock", type: "album" }),
+      year: 1980,
+      durationLabel: "39 min",
+      accentColor: "#6f9cab",
+      source: "curated"
+    },
+    { bg: "#111519", glow: "#26444f", accent: "#88b6c4", text: "#edf3f5" }
+  ),
+  withCover(
+    {
+      id: "secrets",
+      title: "Secrets",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion"],
+      recommendationReason: "整張的電氣感不是鋪滿，而是一直貼著邊緣發光。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Secrets", artist: "Herbie Hancock", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Secrets", artist: "Herbie Hancock", type: "album" }),
+      year: 1976,
+      durationLabel: "43 min",
+      accentColor: "#7d99b1",
+      source: "curated"
+    },
+    { bg: "#11151a", glow: "#274150", accent: "#93b1cb", text: "#eef4f6" }
+  ),
+  withCover(
+    {
+      id: "hymn-of-the-seventh-galaxy",
+      title: "Hymn of the Seventh Galaxy",
+      artist: "Return to Forever",
+      type: "album",
+      subgenre: "Fusion",
+      vibeTags: ["Fusion"],
+      recommendationReason: "它不是只靠速度取勝，而是把每一個轉彎都推得非常有光澤。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Hymn of the Seventh Galaxy", artist: "Return to Forever", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Hymn of the Seventh Galaxy", artist: "Return to Forever", type: "album" }),
+      year: 1973,
+      durationLabel: "37 min",
+      accentColor: "#8da5b8",
+      source: "curated"
+    },
+    { bg: "#11161a", glow: "#294452", accent: "#a0bed3", text: "#eef4f7" }
+  ),
+  withCover(
+    {
+      id: "the-melody-at-night-with-you",
+      title: "The Melody at Night, with You",
+      artist: "Keith Jarrett",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Late Night"],
+      recommendationReason: "幾乎沒有多餘動作，只留下觸鍵、空氣和夜裡很慢的光。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "The Melody at Night, with You", artist: "Keith Jarrett", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "The Melody at Night, with You", artist: "Keith Jarrett", type: "album" }),
+      year: 1999,
+      durationLabel: "55 min",
+      accentColor: "#a3a08d",
+      source: "curated"
+    },
+    { bg: "#141513", glow: "#403f38", accent: "#b8b39b", text: "#f2eee4" }
+  ),
+  withCover(
+    {
+      id: "know-what-i-mean",
+      title: "Know What I Mean?",
+      artist: "Bill Evans",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Late Night"],
+      recommendationReason: "沒有刻意煽情，但情緒會沿著句尾慢慢留下來。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Know What I Mean?", artist: "Bill Evans", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Know What I Mean?", artist: "Bill Evans", type: "album" }),
+      year: 1962,
+      durationLabel: "41 min",
+      accentColor: "#989382",
+      source: "curated"
+    },
+    { bg: "#141411", glow: "#3c392f", accent: "#b0ab95", text: "#f1ede3" }
+  ),
+  withCover(
+    {
+      id: "we-get-requests",
+      title: "We Get Requests",
+      artist: "The Oscar Peterson Trio",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Late Night"],
+      recommendationReason: "步伐很輕，收得很乾淨，適合夜深之後把呼吸放慢一點。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "We Get Requests", artist: "The Oscar Peterson Trio", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "We Get Requests", artist: "The Oscar Peterson Trio", type: "album" }),
+      year: 1964,
+      durationLabel: "35 min",
+      accentColor: "#9d9885",
+      source: "curated"
+    },
+    { bg: "#141412", glow: "#3e3a30", accent: "#b5af98", text: "#f2eee4" }
+  ),
+  withCover(
+    {
+      id: "round-about-midnight",
+      title: "'Round About Midnight",
+      artist: "Miles Davis",
+      type: "album",
+      subgenre: "Cool Jazz",
+      vibeTags: ["Late Night"],
+      recommendationReason: "夜色不是背景，而是整張專輯真正開始發亮的地方。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "'Round About Midnight", artist: "Miles Davis", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "'Round About Midnight", artist: "Miles Davis", type: "album" }),
+      year: 1957,
+      durationLabel: "40 min",
+      accentColor: "#8f8c7c",
+      source: "curated"
+    },
+    { bg: "#131311", glow: "#35342e", accent: "#a6a28f", text: "#f0ede4" }
+  ),
+  withCover(
+    {
+      id: "interplay",
+      title: "Interplay",
+      artist: "Bill Evans",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Focus"],
+      recommendationReason: "節奏和留白都乾淨得很準，讓注意力可以穩穩停在眼前。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Interplay", artist: "Bill Evans", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Interplay", artist: "Bill Evans", type: "album" }),
+      year: 1962,
+      durationLabel: "42 min",
+      accentColor: "#8aa298",
+      source: "curated"
+    },
+    { bg: "#121615", glow: "#304640", accent: "#a2bcb0", text: "#eef3f0" }
+  ),
+  withCover(
+    {
+      id: "speak-like-a-child",
+      title: "Speak Like a Child",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Contemporary Jazz",
+      vibeTags: ["Focus"],
+      recommendationReason: "不急著推情緒，只把線條、色澤和節奏放在最剛好的位置。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Speak Like a Child", artist: "Herbie Hancock", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Speak Like a Child", artist: "Herbie Hancock", type: "album" }),
+      year: 1968,
+      durationLabel: "37 min",
+      accentColor: "#8ca79f",
+      source: "curated"
+    },
+    { bg: "#121615", glow: "#314740", accent: "#a4c0b4", text: "#eef3ef" }
+  ),
+  withCover(
+    {
+      id: "the-bridge",
+      title: "The Bridge",
+      artist: "Sonny Rollins",
+      type: "album",
+      subgenre: "Cool Jazz",
+      vibeTags: ["Focus"],
+      recommendationReason: "步伐穩、視野清，像一張很會替思緒留出空間的專輯。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "The Bridge", artist: "Sonny Rollins", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "The Bridge", artist: "Sonny Rollins", type: "album" }),
+      year: 1962,
+      durationLabel: "39 min",
+      accentColor: "#7f9a99",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2a4141", accent: "#96b6b4", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "empyrean-isles",
+      title: "Empyrean Isles",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "重心很穩，細節卻一直在流動，特別適合長時間專注地放著。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Empyrean Isles", artist: "Herbie Hancock", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Empyrean Isles", artist: "Herbie Hancock", type: "album" }),
+      year: 1964,
+      durationLabel: "35 min",
+      accentColor: "#7da0a1",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#294245", accent: "#93b8ba", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "quiet-kenny",
+      title: "Quiet Kenny",
+      artist: "Kenny Dorham",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Late Night"],
+      recommendationReason: "收得很近，卻不顯得薄，適合夜裡把情緒靜靜往內收。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Quiet Kenny", artist: "Kenny Dorham", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Quiet Kenny", artist: "Kenny Dorham", type: "album" }),
+      year: 1959,
+      durationLabel: "37 min",
+      accentColor: "#9d9585",
+      source: "curated"
+    },
+    { bg: "#141310", glow: "#3c3830", accent: "#b6ad9b", text: "#f2eee4" }
+  ),
+  withCover(
+    {
+      id: "night-train",
+      title: "Night Train",
+      artist: "Oscar Peterson Trio",
+      type: "album",
+      subgenre: "Piano Jazz",
+      vibeTags: ["Late Night"],
+      recommendationReason: "步伐輕快，質地卻很暖，夜再深一點反而更對味。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Night Train", artist: "Oscar Peterson Trio", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Night Train", artist: "Oscar Peterson Trio", type: "album" }),
+      year: 1963,
+      durationLabel: "39 min",
+      accentColor: "#958f80",
+      source: "curated"
+    },
+    { bg: "#141311", glow: "#38352f", accent: "#ada794", text: "#f0ece3" }
+  ),
+  withCover(
+    {
+      id: "concierto",
+      title: "Concierto",
+      artist: "Jim Hall",
+      type: "album",
+      subgenre: "Contemporary Jazz",
+      vibeTags: ["Late Night"],
+      recommendationReason: "乾淨、疏朗、帶一點夜色裡才會浮出的光澤。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Concierto", artist: "Jim Hall", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Concierto", artist: "Jim Hall", type: "album" }),
+      year: 1975,
+      durationLabel: "39 min",
+      accentColor: "#9aa089",
+      source: "curated"
+    },
+    { bg: "#141411", glow: "#3b4037", accent: "#afb49a", text: "#f1eee5" }
+  ),
+  withCover(
+    {
+      id: "page-one",
+      title: "Page One",
+      artist: "Joe Henderson",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "線條清楚，推進穩，讓注意力有地方牢牢落下。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Page One", artist: "Joe Henderson", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Page One", artist: "Joe Henderson", type: "album" }),
+      year: 1963,
+      durationLabel: "40 min",
+      accentColor: "#86a0a0",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2b4343", accent: "#9ab8b8", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "takin-off",
+      title: "Takin' Off",
+      artist: "Herbie Hancock",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "節奏乾淨俐落，沒有多餘手勢，很適合把心思重新校準。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Takin' Off", artist: "Herbie Hancock", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Takin' Off", artist: "Herbie Hancock", type: "album" }),
+      year: 1962,
+      durationLabel: "40 min",
+      accentColor: "#8ba4a4",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2e4545", accent: "#a0bbbb", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "hub-tones",
+      title: "Hub-Tones",
+      artist: "Freddie Hubbard",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "輪廓鮮明但不躁進，剛好能把注意力穩穩往前推。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Hub-Tones", artist: "Freddie Hubbard", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Hub-Tones", artist: "Freddie Hubbard", type: "album" }),
+      year: 1962,
+      durationLabel: "39 min",
+      accentColor: "#8b9fa3",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2c4345", accent: "#9db6bb", text: "#edf3f2" }
   )
 ];
 
@@ -954,7 +1458,12 @@ const curatedPickIdsByVibe = {
     "mingus-ah-um",
     "the-sidewinder",
     "getz-gilberto",
-    "john-coltrane-and-johnny-hartman"
+    "john-coltrane-and-johnny-hartman",
+    "milestones",
+    "portrait-in-jazz",
+    "brilliant-corners",
+    "soul-station",
+    "clifford-brown-and-max-roach"
   ],
   Exploratory: [
     "out-to-lunch",
@@ -968,7 +1477,11 @@ const curatedPickIdsByVibe = {
     "conference-of-the-birds",
     "crescent",
     "a-love-supreme",
-    "emma-jean-thackray"
+    "emma-jean-thackray",
+    "contours",
+    "the-real-mccoy",
+    "evolution",
+    "unit-structures"
   ],
   Fusion: [
     "head-hunters",
@@ -981,7 +1494,12 @@ const curatedPickIdsByVibe = {
     "electric-byrd",
     "light-as-a-feather",
     "romantic-warrior",
-    "black-focus"
+    "black-focus",
+    "inner-mounting-flame",
+    "spectrum",
+    "mr-hands",
+    "secrets",
+    "hymn-of-the-seventh-galaxy"
   ],
   "Late Night": [
     "undercurrent",
@@ -993,7 +1511,14 @@ const curatedPickIdsByVibe = {
     "moon-beams",
     "night-lights",
     "beyond-the-missouri-sky",
-    "alone-together"
+    "alone-together",
+    "the-melody-at-night-with-you",
+    "know-what-i-mean",
+    "we-get-requests",
+    "round-about-midnight",
+    "quiet-kenny",
+    "night-train",
+    "concierto"
   ],
   Focus: [
     "bright-size-life",
@@ -1004,7 +1529,14 @@ const curatedPickIdsByVibe = {
     "conference-of-the-birds",
     "john-coltrane-and-johnny-hartman",
     "emma-jean-thackray",
-    "time-out"
+    "time-out",
+    "interplay",
+    "speak-like-a-child",
+    "the-bridge",
+    "empyrean-isles",
+    "page-one",
+    "takin-off",
+    "hub-tones"
   ]
 } satisfies Record<JazzPick["vibeTags"][number], string[]>;
 
@@ -1051,7 +1583,15 @@ function rotatePicks<T>(picks: T[], rotation: number) {
 
 export function getCuratedPicksForVibe(
   vibe: JazzPick["vibeTags"][number],
-  options?: { limit?: number; excludeIds?: Set<string>; rotation?: number; seed?: number; avoidIds?: string[] }
+  options?: {
+    limit?: number;
+    excludeIds?: Set<string>;
+    hardExcludeIds?: Set<string>;
+    softExcludeIds?: Set<string>;
+    rotation?: number;
+    seed?: number;
+    avoidIds?: string[];
+  }
 ) {
   const pool = curatedPickIdsByVibe[vibe]
     .map((id) => jazzPicks.find((pick) => pick.id === id))
@@ -1060,19 +1600,23 @@ export function getCuratedPicksForVibe(
       ...pick,
       vibeTags: [vibe]
     }));
-  const excludedIds = options?.excludeIds ?? new Set<string>();
+  const hardExcludedIds = new Set<string>([
+    ...(options?.excludeIds ?? []),
+    ...(options?.hardExcludeIds ?? [])
+  ]);
+  const softExcludedIds = options?.softExcludeIds ?? new Set<string>();
   const seed = options?.seed ?? 0;
   const visitOffset = pool.length > 0 ? Math.abs(seed) % pool.length : 0;
   const fresh = rotatePicks(
     seededShuffle(
-      pool.filter((pick) => !excludedIds.has(pick.id)),
+      pool.filter((pick) => !hardExcludedIds.has(pick.id) && !softExcludedIds.has(pick.id)),
       seed + hashSeed(vibe)
     ),
     (options?.rotation ?? 0) + visitOffset
   );
   const fallback = rotatePicks(
     seededShuffle(
-      pool.filter((pick) => excludedIds.has(pick.id)),
+      pool.filter((pick) => !hardExcludedIds.has(pick.id) && softExcludedIds.has(pick.id)),
       seed + hashSeed(`${vibe}-fallback`) + 97
     ),
     (options?.rotation ?? 0) + visitOffset

@@ -55,6 +55,7 @@ export type RecommendationFeed = {
 
 export type RecommendationBatchRequest = {
   vibe: Vibe;
+  savedIds: string[];
   excludeIds: string[];
   avoidIds?: string[];
   rotation: number;

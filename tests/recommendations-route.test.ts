@@ -890,4 +890,23 @@ describe("recommendations route", () => {
       expect(new Set(allIds).size).toBe(25);
     }
   });
+
+  it("keeps saved albums off the server shelf while still returning a full curated batch", async () => {
+    mockGetValidSpotifyAccessToken.mockResolvedValue(null);
+
+    const { GET } = await import("@/app/api/jazz/recommendations/route");
+    const request = new NextRequest(
+      "https://vanguard.noesis.studio/api/jazz/recommendations?vibe=Classic&limit=5&saved=kind-of-blue,blue-train,somethin-else,moanin,time-out&exclude=sunday-at-the-village-vanguard,saxophone-colossus,mingus-ah-um,the-sidewinder,getz-gilberto"
+    );
+    const response = await GET(request);
+    const payload = await response.json();
+
+    const ids = payload.picks.map((pick: { id: string }) => pick.id);
+    expect(payload.picks).toHaveLength(5);
+    expect(ids).not.toContain("kind-of-blue");
+    expect(ids).not.toContain("blue-train");
+    expect(ids).not.toContain("somethin-else");
+    expect(ids).not.toContain("moanin");
+    expect(ids).not.toContain("time-out");
+  });
 });

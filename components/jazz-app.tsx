@@ -58,14 +58,16 @@ function buildFallbackFeedMap(
   seed = 0,
   limit = initialVisiblePicks
 ) {
-  const reservedIds = new Set<string>([...savedIds, ...getGlobalRecommendationIds()]);
+  const globallyRecentIds = new Set<string>(getGlobalRecommendationIds());
+  const batchReservedIds = new Set<string>();
   const feeds = {} as Record<Vibe, RecommendationFeed>;
 
   for (const vibe of vibeOptions) {
-    const excludeIds = new Set([...reservedIds, ...getRecentRecommendationIds(vibe)]);
+    const softExcludeIds = new Set([...globallyRecentIds, ...getRecentRecommendationIds(vibe)]);
     const rotation = getRecommendationRotation(vibe);
     const picks = getCuratedPicksForVibe(vibe, {
-      excludeIds,
+      hardExcludeIds: new Set([...savedIds, ...batchReservedIds]),
+      softExcludeIds,
       rotation,
       seed,
       avoidIds: getRecentRecommendationIds(vibe),
@@ -74,7 +76,7 @@ function buildFallbackFeedMap(
 
     feeds[vibe] = buildCuratedFeed(vibe, picks, [], locale);
     picks.forEach((pick) => {
-      reservedIds.add(pick.id);
+      batchReservedIds.add(pick.id);
     });
   }
 
@@ -90,10 +92,10 @@ function buildRecommendationRequest(
 ): RecommendationBatchRequest {
   return {
     vibe,
+    savedIds: [...savedIds],
     avoidIds: getRecentRecommendationIds(vibe),
     excludeIds: Array.from(
       new Set([
-        ...savedIds,
         ...getGlobalRecommendationIds(),
         ...getRecentRecommendationIds(vibe)
       ])
@@ -273,6 +275,7 @@ export function JazzApp() {
       const request = buildRecommendationRequest(savedIds, activeVibe, sessionSeed, initialVisiblePicks, locale);
       const query = new URLSearchParams({
         vibe: request.vibe,
+        saved: request.savedIds.join(","),
         exclude: request.excludeIds.join(","),
         avoid: (request.avoidIds ?? []).join(","),
         rotation: String(request.rotation),
@@ -402,13 +405,25 @@ export function JazzApp() {
   }, [activeVibe, feedByVibe, hydratedVibes, isReady, locale, savedIds, sessionSeed, spotifySession.connected]);
 
   function handleToggleSave(pick: JazzPick) {
-    setSavedPicks((current) => {
-      const exists = current.some((entry) => entry.id === pick.id);
-      const nextPicks = exists ? current.filter((entry) => entry.id !== pick.id) : [pick, ...current];
-      savePicks(nextPicks);
-      pushToast(exists ? copy.toastRemoved : copy.toastSaved);
-      return nextPicks;
-    });
+    const exists = savedIds.has(pick.id);
+    const nextPicks = exists
+      ? savedPicks.filter((entry) => entry.id !== pick.id)
+      : [pick, ...savedPicks];
+    const nextSavedIds = new Set(nextPicks.map((entry) => entry.id));
+    const nextSeed = exists ? sessionSeed : createRecommendationSessionSeed();
+
+    savePicks(nextPicks);
+    setSavedPicks(nextPicks);
+    setFeedByVibe(buildFallbackFeedMap(nextSavedIds, locale, nextSeed, initialVisiblePicks));
+    setHydratedVibes({});
+    rememberedSeedRef.current = null;
+    setIsLoadingFeed(false);
+
+    if (!exists) {
+      setSessionSeed(nextSeed);
+    }
+
+    pushToast(exists ? copy.toastRemoved : copy.toastSaved);
   }
 
   function handleShare(pick: JazzPick) {

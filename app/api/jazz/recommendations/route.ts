@@ -286,7 +286,8 @@ async function buildSearchDrivenPicks(
 
 async function buildCuratedResponseForVibe(
   vibe: Vibe,
-  excludedIds: Set<string>,
+  hardExcludedIds: Set<string>,
+  softExcludedIds: Set<string>,
   rotation: number,
   accessToken?: string | null,
   limit = 5,
@@ -297,7 +298,8 @@ async function buildCuratedResponseForVibe(
   const hydratedCurated = await Promise.all(
     getCuratedPicksForVibe(vibe, {
       limit: Math.max(limit + 8, 10),
-      excludeIds: excludedIds,
+      hardExcludeIds: hardExcludedIds,
+      softExcludeIds: softExcludedIds,
       rotation,
       seed,
       avoidIds
@@ -443,7 +445,8 @@ async function loadListenerData(accessToken: string): Promise<ListenerData> {
 
 async function buildFeedForVibe(params: {
   vibe: Vibe;
-  excludedIds: Set<string>;
+  hardExcludedIds: Set<string>;
+  softExcludedIds: Set<string>;
   rotation: number;
   seed: number;
   limit: number;
@@ -452,10 +455,32 @@ async function buildFeedForVibe(params: {
   listenerData?: ListenerData | null;
   locale: AppLocale;
 }): Promise<RecommendationFeed> {
-  const { vibe, excludedIds, rotation, seed, limit, avoidIds = [], accessToken, listenerData, locale } = params;
+  const {
+    vibe,
+    hardExcludedIds,
+    softExcludedIds,
+    rotation,
+    seed,
+    limit,
+    avoidIds = [],
+    accessToken,
+    listenerData,
+    locale
+  } = params;
+  const excludedIds = new Set([...hardExcludedIds, ...softExcludedIds]);
 
   if (!accessToken || !listenerData) {
-    return buildCuratedResponseForVibe(vibe, excludedIds, rotation, null, limit, seed, avoidIds, locale);
+    return buildCuratedResponseForVibe(
+      vibe,
+      hardExcludedIds,
+      softExcludedIds,
+      rotation,
+      null,
+      limit,
+      seed,
+      avoidIds,
+      locale
+    );
   }
 
   const { topArtists, topTracks, recentlyPlayed, savedTracks, tasteProfile } = listenerData;
@@ -548,13 +573,29 @@ async function buildFeedForVibe(params: {
     );
   }
 
-  return buildCuratedResponseForVibe(vibe, excludedIds, rotation, accessToken, limit, seed, avoidIds, locale);
+  return buildCuratedResponseForVibe(
+    vibe,
+    hardExcludedIds,
+    softExcludedIds,
+    rotation,
+    accessToken,
+    limit,
+    seed,
+    avoidIds,
+    locale
+  );
 }
 
 export async function GET(request: NextRequest) {
   const vibe = parseVibe(request.nextUrl.searchParams.get("vibe"));
   const locale = parseLocale(request.nextUrl.searchParams.get("locale"));
-  const excludedIds = new Set(
+  const hardExcludedIds = new Set(
+    (request.nextUrl.searchParams.get("saved") ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+  );
+  const softExcludedIds = new Set(
     (request.nextUrl.searchParams.get("exclude") ?? "")
       .split(",")
       .map((value) => value.trim())
@@ -572,7 +613,8 @@ export async function GET(request: NextRequest) {
     const listenerData = accessToken ? await loadListenerData(accessToken) : null;
     const feed = await buildFeedForVibe({
       vibe,
-      excludedIds,
+      hardExcludedIds,
+      softExcludedIds,
       rotation,
       seed,
         limit,
@@ -586,7 +628,17 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "no-store" }
     });
   } catch {
-    const feed = await buildCuratedResponseForVibe(vibe, excludedIds, rotation, null, limit, seed, avoidIds, locale);
+    const feed = await buildCuratedResponseForVibe(
+      vibe,
+      hardExcludedIds,
+      softExcludedIds,
+      rotation,
+      null,
+      limit,
+      seed,
+      avoidIds,
+      locale
+    );
     return NextResponse.json(feed, {
       headers: { "Cache-Control": "no-store" }
     });
@@ -601,6 +653,7 @@ export async function POST(request: NextRequest) {
     .filter((entry) => vibeOptions.includes(entry.vibe))
     .map((entry) => ({
       vibe: entry.vibe,
+      savedIds: entry.savedIds ?? [],
       excludeIds: entry.excludeIds ?? [],
       avoidIds: entry.avoidIds ?? [],
       rotation: entry.rotation ?? 0,
@@ -624,7 +677,8 @@ export async function POST(request: NextRequest) {
     for (const entry of requests) {
       const feed = await buildFeedForVibe({
         vibe: entry.vibe,
-        excludedIds: new Set(entry.excludeIds),
+        hardExcludedIds: new Set(entry.savedIds),
+        softExcludedIds: new Set(entry.excludeIds),
         rotation: entry.rotation,
         seed: entry.seed ?? 0,
         limit: Math.max(1, Math.min(8, entry.limit ?? 5)),
@@ -663,6 +717,7 @@ export async function POST(request: NextRequest) {
     for (const entry of requests) {
       const feed = await buildCuratedResponseForVibe(
         entry.vibe,
+        new Set(entry.savedIds),
         new Set(entry.excludeIds),
         entry.rotation,
         null,
