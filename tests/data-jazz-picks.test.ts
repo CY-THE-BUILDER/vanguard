@@ -75,17 +75,28 @@ describe("curated jazz picks", () => {
     const fusion = getCuratedPicksForVibe("Fusion").map((pick) => pick.id);
     const lateNight = getCuratedPicksForVibe("Late Night").map((pick) => pick.id);
     const focus = getCuratedPicksForVibe("Focus").map((pick) => pick.id);
+    const shelves = {
+      Classic: classic,
+      Exploratory: exploratory,
+      Fusion: fusion,
+      "Late Night": lateNight,
+      Focus: focus
+    };
 
     expect(classic).not.toEqual(exploratory);
     expect(exploratory).not.toEqual(fusion);
     expect(fusion).not.toEqual(lateNight);
     expect(lateNight).not.toEqual(focus);
-    expect(countOverlap(classic, exploratory)).toBe(0);
-    expect(countOverlap(exploratory, fusion)).toBe(0);
-    expect(countOverlap(fusion, lateNight)).toBe(0);
-    expect(countOverlap(exploratory, lateNight)).toBe(0);
-    expect(countOverlap(classic, lateNight)).toBe(0);
-    expect(countOverlap(lateNight, focus)).toBe(0);
+
+    for (const [leftVibe, leftShelf] of Object.entries(shelves)) {
+      for (const [rightVibe, rightShelf] of Object.entries(shelves)) {
+        if (leftVibe >= rightVibe) {
+          continue;
+        }
+
+        expect(countOverlap(leftShelf, rightShelf)).toBe(0);
+      }
+    }
   });
 
   it("normalizes every curated shelf to the requested primary flavor tag", () => {

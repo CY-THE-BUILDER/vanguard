@@ -1443,6 +1443,78 @@ export const jazzPicks: JazzPick[] = [
       source: "curated"
     },
     { bg: "#111617", glow: "#2c4345", accent: "#9db6bb", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "juju",
+      title: "JuJu",
+      artist: "Wayne Shorter",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "線條深，但邏輯很清，越往後聽越適合把心思收回來。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "JuJu", artist: "Wayne Shorter", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "JuJu", artist: "Wayne Shorter", type: "album" }),
+      year: 1965,
+      durationLabel: "42 min",
+      accentColor: "#8aa3a2",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2c4342", accent: "#9fbab8", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "search-for-the-new-land",
+      title: "Search for the New Land",
+      artist: "Lee Morgan",
+      type: "album",
+      subgenre: "Post-Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "不靠喧鬧推進，而是用很穩的步伐把注意力慢慢往前帶。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "Search for the New Land", artist: "Lee Morgan", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "Search for the New Land", artist: "Lee Morgan", type: "album" }),
+      year: 1966,
+      durationLabel: "47 min",
+      accentColor: "#87a2a5",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2b4347", accent: "#9cbac0", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "one-flight-up",
+      title: "One Flight Up",
+      artist: "Dexter Gordon",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "整張的呼吸很長，卻不鬆散，很適合讓腦袋慢慢進入工作的節奏。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "One Flight Up", artist: "Dexter Gordon", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "One Flight Up", artist: "Dexter Gordon", type: "album" }),
+      year: 1965,
+      durationLabel: "48 min",
+      accentColor: "#89a0a1",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2c4242", accent: "#9db5b6", text: "#edf3f2" }
+  ),
+  withCover(
+    {
+      id: "no-room-for-squares",
+      title: "No Room for Squares",
+      artist: "Hank Mobley",
+      type: "album",
+      subgenre: "Hard Bop",
+      vibeTags: ["Focus"],
+      recommendationReason: "節奏、音色、留白都收得夠準，放久了反而更顯得耐聽。",
+      spotifyUrl: buildSpotifySearchUrl({ title: "No Room for Squares", artist: "Hank Mobley", type: "album" }),
+      shareUrl: buildSpotifySearchUrl({ title: "No Room for Squares", artist: "Hank Mobley", type: "album" }),
+      year: 1964,
+      durationLabel: "40 min",
+      accentColor: "#8ea3a0",
+      source: "curated"
+    },
+    { bg: "#111617", glow: "#2d4341", accent: "#a4b9b5", text: "#edf3f1" }
   )
 ];
 
@@ -1526,17 +1598,17 @@ const curatedPickIdsByVibe = {
     "maiden-voyage",
     "extensions",
     "the-awakening",
-    "conference-of-the-birds",
-    "john-coltrane-and-johnny-hartman",
-    "emma-jean-thackray",
-    "time-out",
     "interplay",
     "speak-like-a-child",
     "the-bridge",
     "empyrean-isles",
     "page-one",
     "takin-off",
-    "hub-tones"
+    "hub-tones",
+    "juju",
+    "search-for-the-new-land",
+    "one-flight-up",
+    "no-room-for-squares"
   ]
 } satisfies Record<JazzPick["vibeTags"][number], string[]>;
 
